@@ -1,0 +1,16 @@
+# Backend
+hrm-backend/target/
+hrm-backend/.mvn/
+hrm-backend/mvnw
+hrm-backend/mvnw.cmd
+
+# Frontend
+hrm-frontend/node_modules/
+hrm-frontend/dist/
+
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
