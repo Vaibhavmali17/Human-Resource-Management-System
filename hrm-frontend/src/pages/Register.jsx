@@ -7,6 +7,15 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('ROLE_EMPLOYEE');
+  // Onboarding fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [department, setDepartment] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [dateOfJoining, setDateOfJoining] = useState('');
+  const [address, setAddress] = useState('');
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { register } = useAuth();
@@ -17,7 +26,16 @@ const Register = () => {
     setError('');
     setSuccess('');
     try {
-      await register(username, password, email, role);
+      const onboardingData = role === 'ROLE_EMPLOYEE' ? {
+        firstName,
+        lastName,
+        phone,
+        department,
+        designation,
+        dateOfJoining: dateOfJoining || null,
+        address
+      } : {};
+      await register(username, password, email, role, onboardingData);
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
@@ -30,8 +48,11 @@ const Register = () => {
   const containerStyle = {
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     minHeight: '100vh',
+    padding: '40px 16px',
+    overflowY: 'auto',
+    boxSizing: 'border-box',
     background: 'radial-gradient(circle at top, #1e293b, #0f172a)',
     color: '#f8fafc',
     fontFamily: "'Outfit', 'Inter', sans-serif"
@@ -174,6 +195,102 @@ const Register = () => {
               <option value="ROLE_ADMIN">Admin (HR)</option>
             </select>
           </div>
+
+          {role === 'ROLE_EMPLOYEE' && (
+            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1rem', marginTop: '1rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', color: '#38bdf8' }}>Employee Profile Onboarding</h3>
+              
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>First Name</label>
+                <input 
+                  type="text" 
+                  required 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>Last Name</label>
+                <input 
+                  type="text" 
+                  required 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>Phone Number</label>
+                <input 
+                  type="text" 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="e.g. +1234567890"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>Department</label>
+                <input 
+                  type="text" 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="e.g. Engineering"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                />
+              </div>
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>Designation</label>
+                <input 
+                  type="text" 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="e.g. Software Engineer"
+                  value={designation}
+                  onChange={(e) => setDesignation(e.target.value)}
+                />
+              </div>
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>Date of Joining</label>
+                <input 
+                  type="date" 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  value={dateOfJoining}
+                  onChange={(e) => setDateOfJoining(e.target.value)}
+                />
+              </div>
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>Address</label>
+                <input 
+                  type="text" 
+                  style={inputStyle}
+                  onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="e.g. 123 Main St, City"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
 
           <button type="submit" style={buttonStyle}>
             Create Account

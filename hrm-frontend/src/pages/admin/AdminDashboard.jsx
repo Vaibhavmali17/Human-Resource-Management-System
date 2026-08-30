@@ -355,8 +355,10 @@ const AdminDashboard = () => {
                   <table className="enterprise-table">
                     <thead>
                       <tr>
+                        <th>Emp ID</th>
                         <th>Name</th>
                         <th>Designation</th>
+                        <th>Email</th>
                         <th>Department</th>
                         <th>Actions</th>
                       </tr>
@@ -364,8 +366,10 @@ const AdminDashboard = () => {
                     <tbody>
                       {employees.map(emp => (
                         <tr key={emp.id}>
+                          <td>#{emp.id}</td>
                           <td>{emp.firstName} {emp.lastName}</td>
                           <td>{emp.designation || 'N/A'}</td>
+                          <td>{emp.email}</td>
                           <td>
                             <span className={getDeptBadgeClass(emp.department)}>
                               {emp.department || 'General'}

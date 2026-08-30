@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.hrm.backend.repository.EmployeeRepository;
+import com.hrm.backend.entity.Employee;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,17 +30,20 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
+    private final EmployeeRepository employeeRepository;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
-                           JwtTokenProvider tokenProvider) {
+                           JwtTokenProvider tokenProvider,
+                           EmployeeRepository employeeRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
@@ -75,7 +80,48 @@ public class AuthServiceImpl implements AuthService {
         }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        if (roleStr == null || !roleStr.equalsIgnoreCase("ROLE_ADMIN")) {
+            Employee employee = new Employee();
+            employee.setUser(savedUser);
+            
+            String fName = signupRequest.getFirstName();
+            if (fName == null || fName.trim().isEmpty()) {
+                fName = signupRequest.getUsername();
+            }
+            employee.setFirstName(fName);
+
+            String lName = signupRequest.getLastName();
+            if (lName == null || lName.trim().isEmpty()) {
+                lName = "Employee";
+            }
+            employee.setLastName(lName);
+
+            String email = signupRequest.getEmail();
+            if (email == null || email.trim().isEmpty()) {
+                email = signupRequest.getUsername() + "@company.com";
+            }
+            employee.setEmail(email);
+
+            employee.setPhoneNumber(signupRequest.getPhone());
+            employee.setDepartment(signupRequest.getDepartment());
+            employee.setDesignation(signupRequest.getDesignation());
+
+            if (signupRequest.getDateOfJoining() != null && !signupRequest.getDateOfJoining().trim().isEmpty()) {
+                try {
+                    employee.setDateOfJoining(java.time.LocalDate.parse(signupRequest.getDateOfJoining().trim()));
+                } catch (Exception e) {
+                    employee.setDateOfJoining(java.time.LocalDate.now());
+                }
+            } else {
+                employee.setDateOfJoining(java.time.LocalDate.now());
+            }
+
+            employee.setAddress(signupRequest.getAddress());
+            employee.setSalary(signupRequest.getSalary() != null ? signupRequest.getSalary() : 0.0);
+            employeeRepository.save(employee);
+        }
 
         return "User registered successfully!";
     }

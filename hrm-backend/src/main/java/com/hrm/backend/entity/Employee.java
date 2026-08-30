@@ -44,6 +44,9 @@ public class Employee {
 
     private Double salary;
 
+    @Column(length = 255)
+    private String address;
+
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<LeaveRequest> leaveRequests = new ArrayList<>();

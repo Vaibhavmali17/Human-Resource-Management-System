@@ -29,6 +29,8 @@ const Login = () => {
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: '100vh',
+    width: '100%',
+    boxSizing: 'border-box',
     background: 'radial-gradient(circle at top, #1e293b, #0f172a)',
     color: '#f8fafc',
     fontFamily: "'Outfit', 'Inter', sans-serif"
