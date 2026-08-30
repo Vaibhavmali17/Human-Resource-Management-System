@@ -222,8 +222,126 @@ const AdminDashboard = () => {
 
         {/* Tab content renderer */}
         {activeTab === 'employees' && (
-          <div className="workspace-columns">
-            {/* Left Column (Employees Data Table) */}
+          <div className="workspace-vertical-stack">
+            {/* Top Workspace Form Card */}
+            <div className="card-container">
+              <h3 className="card-header-title">{isEditing ? 'Edit Profile' : 'Add Employee'}</h3>
+              <form onSubmit={handleEmpSubmit}>
+                <div className="input-grid-3col">
+                  <div>
+                    <label className="form-label">First Name</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="e.g. John" 
+                      value={empForm.firstName} 
+                      onChange={e => setEmpForm({...empForm, firstName: e.target.value})} 
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Last Name</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="e.g. Doe" 
+                      value={empForm.lastName} 
+                      onChange={e => setEmpForm({...empForm, lastName: e.target.value})} 
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Email Address</label>
+                    <input 
+                      type="email" 
+                      className="form-input" 
+                      placeholder="e.g. john.doe@company.com" 
+                      value={empForm.email} 
+                      onChange={e => setEmpForm({...empForm, email: e.target.value})} 
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Phone Number</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="e.g. +1234567890" 
+                      value={empForm.phoneNumber} 
+                      onChange={e => setEmpForm({...empForm, phoneNumber: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">User ID Mapping</label>
+                    <input 
+                      type="number" 
+                      className="form-input" 
+                      placeholder="e.g. 1" 
+                      value={empForm.userId} 
+                      onChange={e => setEmpForm({...empForm, userId: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Department</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="e.g. Engineering" 
+                      value={empForm.department} 
+                      onChange={e => setEmpForm({...empForm, department: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Designation</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="e.g. Software Engineer" 
+                      value={empForm.designation} 
+                      onChange={e => setEmpForm({...empForm, designation: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Date of joining</label>
+                    <input 
+                      type="date" 
+                      className="form-input" 
+                      value={empForm.dateOfJoining} 
+                      onChange={e => setEmpForm({...empForm, dateOfJoining: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Salary</label>
+                    <input 
+                      type="number" 
+                      className="form-input" 
+                      placeholder="e.g. 75000" 
+                      value={empForm.salary} 
+                      onChange={e => setEmpForm({...empForm, salary: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-actions-right">
+                  {isEditing && (
+                    <button 
+                      type="button" 
+                      onClick={() => { 
+                        setIsEditing(false); 
+                        setEmpForm({ 
+                          id: null, firstName: '', lastName: '', email: '', phoneNumber: '', 
+                          department: '', designation: '', dateOfJoining: '', salary: '', userId: '' 
+                        }); 
+                      }} 
+                      className="btn-secondary-inline"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button type="submit" disabled={isSubmitting} className="btn-primary-inline">
+                    {isSubmitting && <div className="spinner"></div>}
+                    <span>{isEditing ? 'Update Employee' : 'Create Employee'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Bottom Directory Table Card */}
             <div className="card-container">
               <h3 className="card-header-title">Employees Directory</h3>
               {employees.length === 0 ? (
@@ -267,133 +385,6 @@ const AdminDashboard = () => {
                   </table>
                 </div>
               )}
-            </div>
-
-            {/* Right Column (Add Employee Form Card) */}
-            <div className="card-container">
-              <h3 className="card-header-title">{isEditing ? 'Edit Profile' : 'Add Employee'}</h3>
-              <form onSubmit={handleEmpSubmit}>
-                <div className="input-grid-2col">
-                  <div>
-                    <label className="form-label">First Name</label>
-                    <input 
-                      className="form-input" 
-                      placeholder="e.g. John" 
-                      value={empForm.firstName} 
-                      onChange={e => setEmpForm({...empForm, firstName: e.target.value})} 
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label">Last Name</label>
-                    <input 
-                      className="form-input" 
-                      placeholder="e.g. Doe" 
-                      value={empForm.lastName} 
-                      onChange={e => setEmpForm({...empForm, lastName: e.target.value})} 
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group-fullw">
-                  <label className="form-label">Email Address</label>
-                  <input 
-                    type="email" 
-                    className="form-input" 
-                    placeholder="e.g. john.doe@company.com" 
-                    value={empForm.email} 
-                    onChange={e => setEmpForm({...empForm, email: e.target.value})} 
-                    required
-                  />
-                </div>
-
-                <div className="input-grid-2col">
-                  <div>
-                    <label className="form-label">Phone Number</label>
-                    <input 
-                      className="form-input" 
-                      placeholder="e.g. +1234567890" 
-                      value={empForm.phoneNumber} 
-                      onChange={e => setEmpForm({...empForm, phoneNumber: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label">User ID Mapping</label>
-                    <input 
-                      type="number" 
-                      className="form-input" 
-                      placeholder="e.g. 1" 
-                      value={empForm.userId} 
-                      onChange={e => setEmpForm({...empForm, userId: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="input-grid-2col">
-                  <div>
-                    <label className="form-label">Department</label>
-                    <input 
-                      className="form-input" 
-                      placeholder="e.g. Engineering" 
-                      value={empForm.department} 
-                      onChange={e => setEmpForm({...empForm, department: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label">Designation</label>
-                    <input 
-                      className="form-input" 
-                      placeholder="e.g. Software Engineer" 
-                      value={empForm.designation} 
-                      onChange={e => setEmpForm({...empForm, designation: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="input-grid-2col">
-                  <div>
-                    <label className="form-label">Date of joining</label>
-                    <input 
-                      type="date" 
-                      className="form-input" 
-                      value={empForm.dateOfJoining} 
-                      onChange={e => setEmpForm({...empForm, dateOfJoining: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label">Salary</label>
-                    <input 
-                      type="number" 
-                      className="form-input" 
-                      placeholder="e.g. 75000" 
-                      value={empForm.salary} 
-                      onChange={e => setEmpForm({...empForm, salary: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <button type="submit" disabled={isSubmitting} className="btn-primary-block">
-                  {isSubmitting && <div className="spinner"></div>}
-                  <span>{isEditing ? 'Update Employee' : 'Create Employee'}</span>
-                </button>
-
-                {isEditing && (
-                  <button 
-                    type="button" 
-                    onClick={() => { 
-                      setIsEditing(false); 
-                      setEmpForm({ 
-                        id: null, firstName: '', lastName: '', email: '', phoneNumber: '', 
-                        department: '', designation: '', dateOfJoining: '', salary: '', userId: '' 
-                      }); 
-                    }} 
-                    className="btn-secondary-block"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </form>
             </div>
           </div>
         )}
