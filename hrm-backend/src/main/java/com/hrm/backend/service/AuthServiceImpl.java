@@ -85,28 +85,18 @@ public class AuthServiceImpl implements AuthService {
         if (roleStr == null || !roleStr.equalsIgnoreCase("ROLE_ADMIN")) {
             Employee employee = new Employee();
             employee.setUser(savedUser);
+            employee.setFirstName(signupRequest.getFirstName() != null ? signupRequest.getFirstName() : signupRequest.getUsername());
+            employee.setLastName(signupRequest.getLastName() != null ? signupRequest.getLastName() : "");
             
-            String fName = signupRequest.getFirstName();
-            if (fName == null || fName.trim().isEmpty()) {
-                fName = signupRequest.getUsername();
-            }
-            employee.setFirstName(fName);
-
-            String lName = signupRequest.getLastName();
-            if (lName == null || lName.trim().isEmpty()) {
-                lName = "Employee";
-            }
-            employee.setLastName(lName);
-
             String email = signupRequest.getEmail();
             if (email == null || email.trim().isEmpty()) {
                 email = signupRequest.getUsername() + "@company.com";
             }
             employee.setEmail(email);
-
-            employee.setPhoneNumber(signupRequest.getPhone());
-            employee.setDepartment(signupRequest.getDepartment());
-            employee.setDesignation(signupRequest.getDesignation());
+            
+            employee.setDepartment(signupRequest.getDepartment() != null ? signupRequest.getDepartment() : "General");
+            employee.setDesignation(signupRequest.getDesignation() != null ? signupRequest.getDesignation() : "Associate");
+            employee.setPhoneNumber(signupRequest.getPhone() != null ? signupRequest.getPhone() : "");
 
             if (signupRequest.getDateOfJoining() != null && !signupRequest.getDateOfJoining().trim().isEmpty()) {
                 try {
@@ -120,6 +110,7 @@ public class AuthServiceImpl implements AuthService {
 
             employee.setAddress(signupRequest.getAddress());
             employee.setSalary(signupRequest.getSalary() != null ? signupRequest.getSalary() : 0.0);
+            
             employeeRepository.save(employee);
         }
 

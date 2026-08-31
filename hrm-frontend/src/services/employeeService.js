@@ -10,6 +10,36 @@ export const updateProfile = async (profileData) => {
   return response.data;
 };
 
+export const getMe = async () => {
+  const response = await axiosInstance.get('/api/employee/me');
+  return response.data;
+};
+
+export const updateMe = async (profileData) => {
+  const response = await axiosInstance.put('/api/employee/me', profileData);
+  return response.data;
+};
+
+export const addEmergencyContact = async (contactData) => {
+  const response = await axiosInstance.post('/api/employee/me/emergency-contacts', contactData);
+  return response.data;
+};
+
+export const deleteEmergencyContact = async (id) => {
+  const response = await axiosInstance.delete(`/api/employee/me/emergency-contacts/${id}`);
+  return response.data;
+};
+
+export const addDependent = async (dependentData) => {
+  const response = await axiosInstance.post('/api/employee/me/dependents', dependentData);
+  return response.data;
+};
+
+export const deleteDependent = async (id) => {
+  const response = await axiosInstance.delete(`/api/employee/me/dependents/${id}`);
+  return response.data;
+};
+
 export const getLeaves = async () => {
   const response = await axiosInstance.get('/api/employee/leaves');
   return response.data;
