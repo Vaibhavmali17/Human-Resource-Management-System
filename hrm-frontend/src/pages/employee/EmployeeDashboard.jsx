@@ -41,6 +41,7 @@ const EmployeeDashboard = () => {
   const [performances, setPerformances] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Form states for leaves/timesheets
   const [leaveForm, setLeaveForm] = useState({ startDate: '', endDate: '', leaveType: 'ANNUAL', reason: '' });
@@ -59,6 +60,7 @@ const EmployeeDashboard = () => {
 
   const fetchData = async () => {
     setError('');
+    setLoading(true);
     try {
       if (activeTab === 'profile') {
         const data = await employeeService.getMe();
@@ -100,6 +102,8 @@ const EmployeeDashboard = () => {
       }
     } catch (err) {
       setError('Employee record not initialized by Admin yet, make sure Admin has mapped a user to an employee ID.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -260,8 +264,10 @@ const EmployeeDashboard = () => {
         {error && <div className="alert-box alert-error">{error}</div>}
         {success && <div className="alert-box alert-success">{success}</div>}
 
+        {loading && <div style={{ color: 'var(--text-secondary)', padding: '1.5rem', textAlign: 'center' }}>Loading workspace options...</div>}
+
         {/* Tab 1: Profile Workspace */}
-        {activeTab === 'profile' && profile.id !== null && (
+        {!loading && activeTab === 'profile' && profile.id !== null && (
           <div className="rounded-xl">
             {/* ESS Hub Navigation bar */}
             <div className="ess-tabs-nav">

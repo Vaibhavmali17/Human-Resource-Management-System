@@ -38,6 +38,15 @@ public class User {
     @Builder.Default
     private boolean enabled = true;
 
+    @Column(name = "first_name", length = 50)
+    private String firstName;
+
+    @Column(name = "last_name", length = 50)
+    private String lastName;
+
+    @Column(length = 100)
+    private String email;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Employee employee;
 }

@@ -32,6 +32,7 @@ public class EmployeeDto {
     private String mobileNumber;
     private String personalEmail;
     private String profilePicture;
+    private String employeeCode;
 
     private java.util.List<EmergencyContactDto> emergencyContacts;
     private java.util.List<DependentDto> dependents;

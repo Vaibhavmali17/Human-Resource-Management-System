@@ -47,6 +47,9 @@ public class Employee {
     @Column(length = 255)
     private String address;
 
+    @Column(name = "employee_code", length = 20)
+    private String employeeCode;
+
     @Column(length = 20)
     private String gender;
 

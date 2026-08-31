@@ -83,6 +83,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setMobileNumber(employeeDto.getMobileNumber());
         employee.setPersonalEmail(employeeDto.getPersonalEmail());
         employee.setProfilePicture(employeeDto.getProfilePicture());
+        employee.setEmployeeCode(employeeDto.getEmployeeCode());
 
         if (employeeDto.getUserId() != null) {
             User user = userRepository.findById(employeeDto.getUserId())
@@ -184,15 +185,15 @@ public class EmployeeServiceImpl implements EmployeeService {
                             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
                     Employee employee = new Employee();
                     employee.setUser(user);
-                    employee.setFirstName(user.getUsername());
-                    employee.setLastName("Employee");
-                    employee.setEmail(user.getUsername() + "@company.com");
+                    employee.setFirstName(user.getFirstName() != null ? user.getFirstName() : user.getUsername());
+                    employee.setLastName(user.getLastName() != null ? user.getLastName() : "");
+                    employee.setEmail(user.getEmail() != null ? user.getEmail() : user.getUsername() + "@company.com");
                     employee.setDepartment("General");
-                    employee.setDesignation("Associate");
-                    employee.setPhoneNumber("");
+                    employee.setDesignation("Employee");
                     employee.setDateOfJoining(java.time.LocalDate.now());
                     employee.setSalary(0.0);
                     employee.setAddress("");
+                    employee.setEmployeeCode("EMP-" + String.format("%04d", user.getId()));
                     Employee saved = employeeRepository.save(employee);
                     return mapToDto(saved);
                 });
@@ -224,6 +225,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setMobileNumber(dto.getMobileNumber());
         employee.setPersonalEmail(dto.getPersonalEmail());
         employee.setProfilePicture(dto.getProfilePicture());
+        employee.setEmployeeCode(dto.getEmployeeCode());
 
         if (dto.getUserId() != null) {
             User user = userRepository.findById(dto.getUserId())
@@ -259,6 +261,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         dto.setMobileNumber(employee.getMobileNumber());
         dto.setPersonalEmail(employee.getPersonalEmail());
         dto.setProfilePicture(employee.getProfilePicture());
+        dto.setEmployeeCode(employee.getEmployeeCode());
 
         if (employee.getUser() != null) {
             dto.setUserId(employee.getUser().getId());
