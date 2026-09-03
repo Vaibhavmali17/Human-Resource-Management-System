@@ -76,6 +76,13 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.addEmergencyContact(currentUser.getId(), contactDto), HttpStatus.CREATED);
     }
 
+    @RequestMapping(value = "/me/emergency-contacts/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<EmergencyContactDto> updateEmergencyContact(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                      @PathVariable Long id,
+                                                                      @RequestBody EmergencyContactDto contactDto) {
+        return ResponseEntity.ok(employeeService.updateEmergencyContact(currentUser.getId(), id, contactDto));
+    }
+
     @DeleteMapping("/me/emergency-contacts/{id}")
     public ResponseEntity<Void> deleteEmergencyContact(@AuthenticationPrincipal UserPrincipal currentUser,
                                                        @PathVariable Long id) {
@@ -89,10 +96,173 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeService.addDependent(currentUser.getId(), dependentDto), HttpStatus.CREATED);
     }
 
+    @RequestMapping(value = "/me/dependents/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<DependentDto> updateDependent(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                        @PathVariable Long id,
+                                                        @RequestBody DependentDto dependentDto) {
+        return ResponseEntity.ok(employeeService.updateDependent(currentUser.getId(), id, dependentDto));
+    }
+
     @DeleteMapping("/me/dependents/{id}")
     public ResponseEntity<Void> deleteDependent(@AuthenticationPrincipal UserPrincipal currentUser,
                                                 @PathVariable Long id) {
         employeeService.deleteDependent(currentUser.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Qualifications & Skills Hub Endpoints
+    @GetMapping("/me/qualifications")
+    public ResponseEntity<QualificationsDto> getQualifications(@AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(employeeService.getQualifications(currentUser.getId()));
+    }
+
+    // Work Experience
+    @PostMapping("/me/work-experience")
+    public ResponseEntity<WorkExperienceDto> addWorkExperience(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                               @RequestBody WorkExperienceDto dto) {
+        return new ResponseEntity<>(employeeService.addWorkExperience(currentUser.getId(), dto), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/me/work-experience/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<WorkExperienceDto> updateWorkExperience(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                                  @PathVariable Long id,
+                                                                  @RequestBody WorkExperienceDto dto) {
+        return ResponseEntity.ok(employeeService.updateWorkExperience(currentUser.getId(), id, dto));
+    }
+
+    @DeleteMapping("/me/work-experience/{id}")
+    public ResponseEntity<Void> deleteWorkExperiencePath(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                         @PathVariable Long id) {
+        employeeService.deleteWorkExperience(currentUser.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/work-experience")
+    public ResponseEntity<Void> deleteWorkExperienceParam(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                          @RequestParam(required = false) Long id) {
+        if (id != null) {
+            employeeService.deleteWorkExperience(currentUser.getId(), id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    // Education
+    @PostMapping("/me/education")
+    public ResponseEntity<EducationDto> addEducation(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                     @RequestBody EducationDto dto) {
+        return new ResponseEntity<>(employeeService.addEducation(currentUser.getId(), dto), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/me/education/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<EducationDto> updateEducation(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                        @PathVariable Long id,
+                                                        @RequestBody EducationDto dto) {
+        return ResponseEntity.ok(employeeService.updateEducation(currentUser.getId(), id, dto));
+    }
+
+    @DeleteMapping("/me/education/{id}")
+    public ResponseEntity<Void> deleteEducationPath(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                    @PathVariable Long id) {
+        employeeService.deleteEducation(currentUser.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/education")
+    public ResponseEntity<Void> deleteEducationParam(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                     @RequestParam(required = false) Long id) {
+        if (id != null) {
+            employeeService.deleteEducation(currentUser.getId(), id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    // Skills
+    @PostMapping("/me/skills")
+    public ResponseEntity<SkillDto> addSkill(@AuthenticationPrincipal UserPrincipal currentUser,
+                                             @RequestBody SkillDto dto) {
+        return new ResponseEntity<>(employeeService.addSkill(currentUser.getId(), dto), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/me/skills/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<SkillDto> updateSkill(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                @PathVariable Long id,
+                                                @RequestBody SkillDto dto) {
+        return ResponseEntity.ok(employeeService.updateSkill(currentUser.getId(), id, dto));
+    }
+
+    @DeleteMapping("/me/skills/{id}")
+    public ResponseEntity<Void> deleteSkillPath(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                @PathVariable Long id) {
+        employeeService.deleteSkill(currentUser.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/skills")
+    public ResponseEntity<Void> deleteSkillParam(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                 @RequestParam(required = false) Long id) {
+        if (id != null) {
+            employeeService.deleteSkill(currentUser.getId(), id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    // Languages
+    @PostMapping("/me/languages")
+    public ResponseEntity<LanguageDto> addLanguage(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                   @RequestBody LanguageDto dto) {
+        return new ResponseEntity<>(employeeService.addLanguage(currentUser.getId(), dto), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/me/languages/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<LanguageDto> updateLanguage(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                      @PathVariable Long id,
+                                                      @RequestBody LanguageDto dto) {
+        return ResponseEntity.ok(employeeService.updateLanguage(currentUser.getId(), id, dto));
+    }
+
+    @DeleteMapping("/me/languages/{id}")
+    public ResponseEntity<Void> deleteLanguagePath(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                   @PathVariable Long id) {
+        employeeService.deleteLanguage(currentUser.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/languages")
+    public ResponseEntity<Void> deleteLanguageParam(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                    @RequestParam(required = false) Long id) {
+        if (id != null) {
+            employeeService.deleteLanguage(currentUser.getId(), id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    // Licenses
+    @PostMapping("/me/licenses")
+    public ResponseEntity<LicenseDto> addLicense(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                 @RequestBody LicenseDto dto) {
+        return new ResponseEntity<>(employeeService.addLicense(currentUser.getId(), dto), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/me/licenses/{id}", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<LicenseDto> updateLicense(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                    @PathVariable Long id,
+                                                    @RequestBody LicenseDto dto) {
+        return ResponseEntity.ok(employeeService.updateLicense(currentUser.getId(), id, dto));
+    }
+
+    @DeleteMapping("/me/licenses/{id}")
+    public ResponseEntity<Void> deleteLicensePath(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                  @PathVariable Long id) {
+        employeeService.deleteLicense(currentUser.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/licenses")
+    public ResponseEntity<Void> deleteLicenseParam(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                   @RequestParam(required = false) Long id) {
+        if (id != null) {
+            employeeService.deleteLicense(currentUser.getId(), id);
+        }
         return ResponseEntity.noContent().build();
     }
 

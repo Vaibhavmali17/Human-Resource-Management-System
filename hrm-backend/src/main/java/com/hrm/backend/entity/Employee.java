@@ -86,7 +86,6 @@ public class Employee {
     @Column(name = "personal_email", length = 100)
     private String personalEmail;
 
-    @Lob
     @Column(name = "profile_picture", columnDefinition = "TEXT")
     private String profilePicture;
 
@@ -109,4 +108,24 @@ public class Employee {
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Performance> performances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<WorkExperience> workExperiences = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Education> educations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Skill> skills = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Language> languages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<License> licenses = new ArrayList<>();
 }

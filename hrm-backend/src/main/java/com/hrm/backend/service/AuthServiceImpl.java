@@ -66,20 +66,34 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(signupRequest.getUsername());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
 
-        Set<Role> roles = new HashSet<>();
+        String roleStr = signupRequest.getRole();
+        if (roleStr == null || roleStr.trim().isEmpty()) {
+            roleStr = "ROLE_EMPLOYEE";
+        }
 
-        String roleStr = "ROLE_EMPLOYEE";
-        Role userRole = roleRepository.findByName(RoleName.ROLE_EMPLOYEE)
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Employee Role not found."));
-        roles.add(userRole);
+        Set<Role> roles = new HashSet<>();
+        boolean isAdmin = "ROLE_ADMIN".equalsIgnoreCase(roleStr) || "ADMIN".equalsIgnoreCase(roleStr);
+        if (isAdmin) {
+            Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Admin Role not found."));
+            roles.add(adminRole);
+        } else {
+            Role userRole = roleRepository.findByName(RoleName.ROLE_EMPLOYEE)
+                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Employee Role not found."));
+            roles.add(userRole);
+        }
 
         user.setRoles(roles);
+        user.setFirstName(signupRequest.getFirstName() != null ? signupRequest.getFirstName() : signupRequest.getUsername());
+        user.setLastName(signupRequest.getLastName() != null ? signupRequest.getLastName() : "");
+        user.setEmail(signupRequest.getEmail());
+
         User savedUser = userRepository.save(user);
 
         Employee employee = new Employee();
         employee.setUser(savedUser);
-        employee.setFirstName(signupRequest.getFirstName() != null ? signupRequest.getFirstName() : signupRequest.getUsername());
-        employee.setLastName(signupRequest.getLastName() != null ? signupRequest.getLastName() : "");
+        employee.setFirstName(user.getFirstName());
+        employee.setLastName(user.getLastName());
         
         String email = signupRequest.getEmail();
         if (email == null || email.trim().isEmpty()) {
@@ -87,12 +101,12 @@ public class AuthServiceImpl implements AuthService {
         }
         employee.setEmail(email);
         
-        if (roleStr != null && roleStr.equalsIgnoreCase("ROLE_ADMIN")) {
-            employee.setDepartment("Administration");
-            employee.setDesignation("HR Admin");
+        if (isAdmin) {
+            employee.setDepartment(signupRequest.getDepartment() != null && !signupRequest.getDepartment().isEmpty() ? signupRequest.getDepartment() : "Administration");
+            employee.setDesignation(signupRequest.getDesignation() != null && !signupRequest.getDesignation().isEmpty() ? signupRequest.getDesignation() : "HR Admin");
         } else {
-            employee.setDepartment(signupRequest.getDepartment() != null ? signupRequest.getDepartment() : "General");
-            employee.setDesignation(signupRequest.getDesignation() != null ? signupRequest.getDesignation() : "Associate");
+            employee.setDepartment(signupRequest.getDepartment() != null && !signupRequest.getDepartment().isEmpty() ? signupRequest.getDepartment() : "General");
+            employee.setDesignation(signupRequest.getDesignation() != null && !signupRequest.getDesignation().isEmpty() ? signupRequest.getDesignation() : "Associate");
         }
         employee.setPhoneNumber(signupRequest.getPhone() != null ? signupRequest.getPhone() : "");
 
@@ -108,10 +122,11 @@ public class AuthServiceImpl implements AuthService {
 
         employee.setAddress(signupRequest.getAddress());
         employee.setSalary(signupRequest.getSalary() != null ? signupRequest.getSalary() : 0.0);
+        employee.setEmployeeCode("EMP-" + String.format("%04d", savedUser.getId()));
         
         employeeRepository.save(employee);
 
-        return "User registered successfully!";
+        return isAdmin ? "Admin registered successfully!" : "Employee registered successfully!";
     }
 
     @Override

@@ -1,38 +1,47 @@
 package com.hrm.backend.service;
 
-import com.hrm.backend.dto.EmployeeDto;
-import com.hrm.backend.dto.EmergencyContactDto;
-import com.hrm.backend.dto.DependentDto;
-import com.hrm.backend.entity.Employee;
-import com.hrm.backend.entity.EmergencyContact;
-import com.hrm.backend.entity.Dependent;
-import com.hrm.backend.entity.User;
+import com.hrm.backend.dto.*;
+import com.hrm.backend.entity.*;
 import com.hrm.backend.exception.ResourceNotFoundException;
-import com.hrm.backend.repository.EmployeeRepository;
-import com.hrm.backend.repository.UserRepository;
-import com.hrm.backend.repository.EmergencyContactRepository;
-import com.hrm.backend.repository.DependentRepository;
+import com.hrm.backend.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final EmergencyContactRepository emergencyContactRepository;
     private final DependentRepository dependentRepository;
+    private final WorkExperienceRepository workExperienceRepository;
+    private final EducationRepository educationRepository;
+    private final SkillRepository skillRepository;
+    private final LanguageRepository languageRepository;
+    private final LicenseRepository licenseRepository;
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                UserRepository userRepository,
                                EmergencyContactRepository emergencyContactRepository,
-                               DependentRepository dependentRepository) {
+                               DependentRepository dependentRepository,
+                               WorkExperienceRepository workExperienceRepository,
+                               EducationRepository educationRepository,
+                               SkillRepository skillRepository,
+                               LanguageRepository languageRepository,
+                               LicenseRepository licenseRepository) {
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
         this.emergencyContactRepository = emergencyContactRepository;
         this.dependentRepository = dependentRepository;
+        this.workExperienceRepository = workExperienceRepository;
+        this.educationRepository = educationRepository;
+        this.skillRepository = skillRepository;
+        this.languageRepository = languageRepository;
+        this.licenseRepository = licenseRepository;
     }
 
     @Override
@@ -119,6 +128,33 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public EmergencyContactDto updateEmergencyContact(Long userId, Long contactId, EmergencyContactDto contactDto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        EmergencyContact contact = emergencyContactRepository.findById(contactId)
+                .orElseThrow(() -> new ResourceNotFoundException("EmergencyContact", "id", contactId));
+
+        if (!contact.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this contact");
+        }
+
+        contact.setName(contactDto.getName());
+        contact.setRelationship(contactDto.getRelationship());
+        contact.setMobileNumber(contactDto.getMobileNumber());
+        contact.setHomePhone(contactDto.getHomePhone());
+
+        EmergencyContact saved = emergencyContactRepository.save(contact);
+        return EmergencyContactDto.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .relationship(saved.getRelationship())
+                .mobileNumber(saved.getMobileNumber())
+                .homePhone(saved.getHomePhone())
+                .build();
+    }
+
+    @Override
     public void deleteEmergencyContact(Long userId, Long contactId) {
         Employee employee = employeeRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
@@ -155,6 +191,31 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public DependentDto updateDependent(Long userId, Long dependentId, DependentDto dependentDto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Dependent dependent = dependentRepository.findById(dependentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dependent", "id", dependentId));
+
+        if (!dependent.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this dependent");
+        }
+
+        dependent.setName(dependentDto.getName());
+        dependent.setRelationship(dependentDto.getRelationship());
+        dependent.setDateOfBirth(dependentDto.getDateOfBirth());
+
+        Dependent saved = dependentRepository.save(dependent);
+        return DependentDto.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .relationship(saved.getRelationship())
+                .dateOfBirth(saved.getDateOfBirth())
+                .build();
+    }
+
+    @Override
     public void deleteDependent(Long userId, Long dependentId) {
         Employee employee = employeeRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
@@ -176,10 +237,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.delete(employee);
     }
 
-    @Override
-    public EmployeeDto getEmployeeByUserId(Long userId) {
+    private Employee getOrCreateEmployeeEntityByUserId(Long userId) {
         return employeeRepository.findByUserId(userId)
-                .map(this::mapToDto)
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId)
                             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
@@ -194,9 +253,13 @@ public class EmployeeServiceImpl implements EmployeeService {
                     employee.setSalary(0.0);
                     employee.setAddress("");
                     employee.setEmployeeCode("EMP-" + String.format("%04d", user.getId()));
-                    Employee saved = employeeRepository.save(employee);
-                    return mapToDto(saved);
+                    return employeeRepository.save(employee);
                 });
+    }
+
+    @Override
+    public EmployeeDto getEmployeeByUserId(Long userId) {
+        return mapToDto(getOrCreateEmployeeEntityByUserId(userId));
     }
 
     private Employee mapToEntity(EmployeeDto dto) {
@@ -284,5 +347,325 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         return dto;
+    }
+
+    @Override
+    public QualificationsDto getQualifications(Long userId) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+                    Employee newEmp = new Employee();
+                    newEmp.setUser(user);
+                    newEmp.setFirstName(user.getFirstName() != null && !user.getFirstName().isEmpty() ? user.getFirstName() : user.getUsername());
+                    newEmp.setLastName(user.getLastName() != null ? user.getLastName() : "");
+                    newEmp.setEmail(user.getEmail() != null && !user.getEmail().isEmpty() ? user.getEmail() : user.getUsername() + "@company.com");
+                    newEmp.setDepartment("General");
+                    newEmp.setDesignation("Employee");
+                    newEmp.setDateOfJoining(java.time.LocalDate.now());
+                    newEmp.setSalary(0.0);
+                    newEmp.setAddress("");
+                    newEmp.setEmployeeCode("EMP-" + String.format("%04d", user.getId()));
+                    return employeeRepository.save(newEmp);
+                });
+
+        List<WorkExperienceDto> workExpDtos = workExperienceRepository.findByEmployeeId(employee.getId()).stream()
+                .map(w -> new WorkExperienceDto(w.getId(), w.getCompany(), w.getJobTitle(), w.getFromDate(), w.getToDate(), w.getComment()))
+                .collect(Collectors.toList());
+
+        List<EducationDto> eduDtos = educationRepository.findByEmployeeId(employee.getId()).stream()
+                .map(e -> new EducationDto(e.getId(), e.getLevel(), e.getInstitute(), e.getMajor(), e.getYear(), e.getGpaScore(), e.getStartDate(), e.getEndDate()))
+                .collect(Collectors.toList());
+
+        List<SkillDto> skillDtos = skillRepository.findByEmployeeId(employee.getId()).stream()
+                .map(s -> new SkillDto(s.getId(), s.getSkillName(), s.getYearsOfExperience(), s.getComments()))
+                .collect(Collectors.toList());
+
+        List<LanguageDto> langDtos = languageRepository.findByEmployeeId(employee.getId()).stream()
+                .map(l -> new LanguageDto(l.getId(), l.getLanguageName(), l.getFluency(), l.getCompetency(), l.getComments()))
+                .collect(Collectors.toList());
+
+        List<LicenseDto> licDtos = licenseRepository.findByEmployeeId(employee.getId()).stream()
+                .map(lic -> new LicenseDto(lic.getId(), lic.getLicenseType(), lic.getLicenseNumber(), lic.getIssuedDate(), lic.getExpiryDate()))
+                .collect(Collectors.toList());
+
+        return QualificationsDto.builder()
+                .workExperiences(workExpDtos)
+                .educations(eduDtos)
+                .skills(skillDtos)
+                .languages(langDtos)
+                .licenses(licDtos)
+                .build();
+    }
+
+    @Override
+    public WorkExperienceDto addWorkExperience(Long userId, WorkExperienceDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        WorkExperience exp = WorkExperience.builder()
+                .company(dto.getCompany())
+                .jobTitle(dto.getJobTitle())
+                .fromDate(dto.getFromDate())
+                .toDate(dto.getToDate())
+                .comment(dto.getComment())
+                .employee(employee)
+                .build();
+
+        WorkExperience saved = workExperienceRepository.save(exp);
+        return new WorkExperienceDto(saved.getId(), saved.getCompany(), saved.getJobTitle(), saved.getFromDate(), saved.getToDate(), saved.getComment());
+    }
+
+    @Override
+    public WorkExperienceDto updateWorkExperience(Long userId, Long id, WorkExperienceDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        WorkExperience exp = workExperienceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("WorkExperience", "id", id));
+
+        if (!exp.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this work experience record");
+        }
+
+        exp.setCompany(dto.getCompany());
+        exp.setJobTitle(dto.getJobTitle());
+        exp.setFromDate(dto.getFromDate());
+        exp.setToDate(dto.getToDate());
+        exp.setComment(dto.getComment());
+
+        WorkExperience saved = workExperienceRepository.save(exp);
+        return new WorkExperienceDto(saved.getId(), saved.getCompany(), saved.getJobTitle(), saved.getFromDate(), saved.getToDate(), saved.getComment());
+    }
+
+    @Override
+    public void deleteWorkExperience(Long userId, Long id) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        WorkExperience exp = workExperienceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("WorkExperience", "id", id));
+
+        if (!exp.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to delete this work experience record");
+        }
+
+        workExperienceRepository.delete(exp);
+    }
+
+    @Override
+    public EducationDto addEducation(Long userId, EducationDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Education edu = Education.builder()
+                .level(dto.getLevel())
+                .institute(dto.getInstitute())
+                .major(dto.getMajor())
+                .year(dto.getYear())
+                .gpaScore(dto.getGpaScore())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .employee(employee)
+                .build();
+
+        Education saved = educationRepository.save(edu);
+        return new EducationDto(saved.getId(), saved.getLevel(), saved.getInstitute(), saved.getMajor(), saved.getYear(), saved.getGpaScore(), saved.getStartDate(), saved.getEndDate());
+    }
+
+    @Override
+    public EducationDto updateEducation(Long userId, Long id, EducationDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Education edu = educationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Education", "id", id));
+
+        if (!edu.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this education record");
+        }
+
+        edu.setLevel(dto.getLevel());
+        edu.setInstitute(dto.getInstitute());
+        edu.setMajor(dto.getMajor());
+        edu.setYear(dto.getYear());
+        edu.setGpaScore(dto.getGpaScore());
+        edu.setStartDate(dto.getStartDate());
+        edu.setEndDate(dto.getEndDate());
+
+        Education saved = educationRepository.save(edu);
+        return new EducationDto(saved.getId(), saved.getLevel(), saved.getInstitute(), saved.getMajor(), saved.getYear(), saved.getGpaScore(), saved.getStartDate(), saved.getEndDate());
+    }
+
+    @Override
+    public void deleteEducation(Long userId, Long id) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Education edu = educationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Education", "id", id));
+
+        if (!edu.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to delete this education record");
+        }
+
+        educationRepository.delete(edu);
+    }
+
+    @Override
+    public SkillDto addSkill(Long userId, SkillDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Skill skill = Skill.builder()
+                .skillName(dto.getSkillName())
+                .yearsOfExperience(dto.getYearsOfExperience())
+                .comments(dto.getComments())
+                .employee(employee)
+                .build();
+
+        Skill saved = skillRepository.save(skill);
+        return new SkillDto(saved.getId(), saved.getSkillName(), saved.getYearsOfExperience(), saved.getComments());
+    }
+
+    @Override
+    public SkillDto updateSkill(Long userId, Long id, SkillDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Skill", "id", id));
+
+        if (!skill.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this skill record");
+        }
+
+        skill.setSkillName(dto.getSkillName());
+        skill.setYearsOfExperience(dto.getYearsOfExperience());
+        skill.setComments(dto.getComments());
+
+        Skill saved = skillRepository.save(skill);
+        return new SkillDto(saved.getId(), saved.getSkillName(), saved.getYearsOfExperience(), saved.getComments());
+    }
+
+    @Override
+    public void deleteSkill(Long userId, Long id) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Skill", "id", id));
+
+        if (!skill.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to delete this skill record");
+        }
+
+        skillRepository.delete(skill);
+    }
+
+    @Override
+    public LanguageDto addLanguage(Long userId, LanguageDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Language lang = Language.builder()
+                .languageName(dto.getLanguageName())
+                .fluency(dto.getFluency())
+                .competency(dto.getCompetency())
+                .comments(dto.getComments())
+                .employee(employee)
+                .build();
+
+        Language saved = languageRepository.save(lang);
+        return new LanguageDto(saved.getId(), saved.getLanguageName(), saved.getFluency(), saved.getCompetency(), saved.getComments());
+    }
+
+    @Override
+    public LanguageDto updateLanguage(Long userId, Long id, LanguageDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Language lang = languageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Language", "id", id));
+
+        if (!lang.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this language record");
+        }
+
+        lang.setLanguageName(dto.getLanguageName());
+        lang.setFluency(dto.getFluency());
+        lang.setCompetency(dto.getCompetency());
+        lang.setComments(dto.getComments());
+
+        Language saved = languageRepository.save(lang);
+        return new LanguageDto(saved.getId(), saved.getLanguageName(), saved.getFluency(), saved.getCompetency(), saved.getComments());
+    }
+
+    @Override
+    public void deleteLanguage(Long userId, Long id) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        Language lang = languageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Language", "id", id));
+
+        if (!lang.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to delete this language record");
+        }
+
+        languageRepository.delete(lang);
+    }
+
+    @Override
+    public LicenseDto addLicense(Long userId, LicenseDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        License lic = License.builder()
+                .licenseType(dto.getLicenseType())
+                .licenseNumber(dto.getLicenseNumber())
+                .issuedDate(dto.getIssuedDate())
+                .expiryDate(dto.getExpiryDate())
+                .employee(employee)
+                .build();
+
+        License saved = licenseRepository.save(lic);
+        return new LicenseDto(saved.getId(), saved.getLicenseType(), saved.getLicenseNumber(), saved.getIssuedDate(), saved.getExpiryDate());
+    }
+
+    @Override
+    public LicenseDto updateLicense(Long userId, Long id, LicenseDto dto) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        License lic = licenseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("License", "id", id));
+
+        if (!lic.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to update this license record");
+        }
+
+        lic.setLicenseType(dto.getLicenseType());
+        lic.setLicenseNumber(dto.getLicenseNumber());
+        lic.setIssuedDate(dto.getIssuedDate());
+        lic.setExpiryDate(dto.getExpiryDate());
+
+        License saved = licenseRepository.save(lic);
+        return new LicenseDto(saved.getId(), saved.getLicenseType(), saved.getLicenseNumber(), saved.getIssuedDate(), saved.getExpiryDate());
+    }
+
+    @Override
+    public void deleteLicense(Long userId, Long id) {
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "userId", userId));
+
+        License lic = licenseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("License", "id", id));
+
+        if (!lic.getEmployee().getId().equals(employee.getId())) {
+            throw new IllegalArgumentException("Unauthorized to delete this license record");
+        }
+
+        licenseRepository.delete(lic);
     }
 }

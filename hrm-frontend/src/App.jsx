@@ -26,7 +26,7 @@ function App() {
         <Route 
           path="/employee/*" 
           element={
-            <ProtectedRoute allowedRoles={['ROLE_EMPLOYEE']}>
+            <ProtectedRoute allowedRoles={['ROLE_EMPLOYEE', 'ROLE_ADMIN']}>
               <EmployeeDashboard />
             </ProtectedRoute>
           } 
