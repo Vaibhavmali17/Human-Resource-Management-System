@@ -19,17 +19,25 @@ public class AdminController {
     private final TimesheetService timesheetService;
     private final RecruitmentService recruitmentService;
     private final PerformanceService performanceService;
+    private final AuthService authService;
 
     public AdminController(EmployeeService employeeService,
                            LeaveService leaveService,
                            TimesheetService timesheetService,
                            RecruitmentService recruitmentService,
-                           PerformanceService performanceService) {
+                           PerformanceService performanceService,
+                           AuthService authService) {
         this.employeeService = employeeService;
         this.leaveService = leaveService;
         this.timesheetService = timesheetService;
         this.recruitmentService = recruitmentService;
         this.performanceService = performanceService;
+        this.authService = authService;
+    }
+
+    @PostMapping("/create-admin")
+    public ResponseEntity<String> createAdmin(@RequestBody SignupRequest signupRequest) {
+        return ResponseEntity.ok(authService.registerAdmin(signupRequest));
     }
 
     // PIM - Employee CRUD

@@ -6,4 +6,5 @@ import com.hrm.backend.dto.SignupRequest;
 public interface AuthService {
     String login(LoginRequest loginRequest);
     String register(SignupRequest signupRequest);
+    String registerAdmin(SignupRequest signupRequest);
 }

@@ -68,52 +68,87 @@ public class AuthServiceImpl implements AuthService {
 
         Set<Role> roles = new HashSet<>();
 
-        String roleStr = signupRequest.getRole();
-        if (roleStr != null && roleStr.equalsIgnoreCase("ROLE_ADMIN")) {
-            Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Admin Role not found."));
-            roles.add(adminRole);
-        } else {
-            Role userRole = roleRepository.findByName(RoleName.ROLE_EMPLOYEE)
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Employee Role not found."));
-            roles.add(userRole);
-        }
+        String roleStr = "ROLE_EMPLOYEE";
+        Role userRole = roleRepository.findByName(RoleName.ROLE_EMPLOYEE)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Employee Role not found."));
+        roles.add(userRole);
 
         user.setRoles(roles);
         User savedUser = userRepository.save(user);
 
-        if (roleStr == null || !roleStr.equalsIgnoreCase("ROLE_ADMIN")) {
-            Employee employee = new Employee();
-            employee.setUser(savedUser);
-            employee.setFirstName(signupRequest.getFirstName() != null ? signupRequest.getFirstName() : signupRequest.getUsername());
-            employee.setLastName(signupRequest.getLastName() != null ? signupRequest.getLastName() : "");
-            
-            String email = signupRequest.getEmail();
-            if (email == null || email.trim().isEmpty()) {
-                email = signupRequest.getUsername() + "@company.com";
-            }
-            employee.setEmail(email);
-            
+        Employee employee = new Employee();
+        employee.setUser(savedUser);
+        employee.setFirstName(signupRequest.getFirstName() != null ? signupRequest.getFirstName() : signupRequest.getUsername());
+        employee.setLastName(signupRequest.getLastName() != null ? signupRequest.getLastName() : "");
+        
+        String email = signupRequest.getEmail();
+        if (email == null || email.trim().isEmpty()) {
+            email = signupRequest.getUsername() + "@company.com";
+        }
+        employee.setEmail(email);
+        
+        if (roleStr != null && roleStr.equalsIgnoreCase("ROLE_ADMIN")) {
+            employee.setDepartment("Administration");
+            employee.setDesignation("HR Admin");
+        } else {
             employee.setDepartment(signupRequest.getDepartment() != null ? signupRequest.getDepartment() : "General");
             employee.setDesignation(signupRequest.getDesignation() != null ? signupRequest.getDesignation() : "Associate");
-            employee.setPhoneNumber(signupRequest.getPhone() != null ? signupRequest.getPhone() : "");
+        }
+        employee.setPhoneNumber(signupRequest.getPhone() != null ? signupRequest.getPhone() : "");
 
-            if (signupRequest.getDateOfJoining() != null && !signupRequest.getDateOfJoining().trim().isEmpty()) {
-                try {
-                    employee.setDateOfJoining(java.time.LocalDate.parse(signupRequest.getDateOfJoining().trim()));
-                } catch (Exception e) {
-                    employee.setDateOfJoining(java.time.LocalDate.now());
-                }
-            } else {
+        if (signupRequest.getDateOfJoining() != null && !signupRequest.getDateOfJoining().trim().isEmpty()) {
+            try {
+                employee.setDateOfJoining(java.time.LocalDate.parse(signupRequest.getDateOfJoining().trim()));
+            } catch (Exception e) {
                 employee.setDateOfJoining(java.time.LocalDate.now());
             }
-
-            employee.setAddress(signupRequest.getAddress());
-            employee.setSalary(signupRequest.getSalary() != null ? signupRequest.getSalary() : 0.0);
-            
-            employeeRepository.save(employee);
+        } else {
+            employee.setDateOfJoining(java.time.LocalDate.now());
         }
 
+        employee.setAddress(signupRequest.getAddress());
+        employee.setSalary(signupRequest.getSalary() != null ? signupRequest.getSalary() : 0.0);
+        
+        employeeRepository.save(employee);
+
         return "User registered successfully!";
+    }
+
+    @Override
+    public String registerAdmin(SignupRequest signupRequest) {
+        if (userRepository.existsByUsername(signupRequest.getUsername())) {
+            throw new APIException(HttpStatus.BAD_REQUEST, "Username check failed: Username is already taken!");
+        }
+
+        User user = new User();
+        user.setUsername(signupRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+
+        Set<Role> roles = new HashSet<>();
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Admin Role not found."));
+        roles.add(adminRole);
+        user.setRoles(roles);
+
+        User savedUser = userRepository.save(user);
+
+        Employee employee = new Employee();
+        employee.setUser(savedUser);
+        employee.setFirstName(signupRequest.getFirstName() != null ? signupRequest.getFirstName() : signupRequest.getUsername());
+        employee.setLastName(signupRequest.getLastName() != null ? signupRequest.getLastName() : "");
+        
+        String email = signupRequest.getEmail();
+        if (email == null || email.trim().isEmpty()) {
+            email = signupRequest.getUsername() + "@company.com";
+        }
+        employee.setEmail(email);
+        employee.setDepartment("Administration");
+        employee.setDesignation("HR Admin");
+        employee.setPhoneNumber(signupRequest.getPhone() != null ? signupRequest.getPhone() : "");
+        employee.setDateOfJoining(java.time.LocalDate.now());
+        employee.setSalary(0.0);
+        employeeRepository.save(employee);
+
+        return "Admin registered successfully!";
     }
 }

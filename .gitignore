@@ -3,6 +3,7 @@ hrm-backend/target/
 hrm-backend/.mvn/
 hrm-backend/mvnw
 hrm-backend/mvnw.cmd
+hrm-backend/.env
 
 # Frontend
 hrm-frontend/node_modules/

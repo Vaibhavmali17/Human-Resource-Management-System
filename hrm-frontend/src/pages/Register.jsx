@@ -184,17 +184,7 @@ const Register = () => {
             />
           </div>
 
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Access Role</label>
-            <select 
-              style={inputStyle}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="ROLE_EMPLOYEE">Employee (ESS)</option>
-              <option value="ROLE_ADMIN">Admin (HR)</option>
-            </select>
-          </div>
+
 
           {role === 'ROLE_EMPLOYEE' && (
             <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1rem', marginTop: '1rem' }}>

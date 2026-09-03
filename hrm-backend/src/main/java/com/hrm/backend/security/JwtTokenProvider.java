@@ -23,8 +23,11 @@ public class JwtTokenProvider {
     private final int jwtExpirationInMs;
 
     public JwtTokenProvider(
-            @Value("${app.jwt.secret:9a6140ba865b266223405c10aa278546b38f8d689622d109f29108c4aa265c71c4c8103e62fba238f42ef4f1cd3e659b8be92ed8b34c2ab1cd2b2f6b8f103b41}") String jwtSecret,
+            @Value("${app.jwt.secret}") String jwtSecret,
             @Value("${app.jwt.expiration-ms:86400000}") int jwtExpirationInMs) {
+        if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
+            throw new IllegalArgumentException("JWT Secret is missing. The app.jwt.secret property must be set.");
+        }
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         this.jwtExpirationInMs = jwtExpirationInMs;
     }

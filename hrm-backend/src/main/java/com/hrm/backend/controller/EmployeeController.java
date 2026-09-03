@@ -41,12 +41,10 @@ public class EmployeeController {
         EmployeeDto existingEmployee = employeeService.getEmployeeByUserId(currentUser.getId());
         existingEmployee.setFirstName(employeeDto.getFirstName());
         existingEmployee.setLastName(employeeDto.getLastName());
-        existingEmployee.setEmail(employeeDto.getEmail());
         existingEmployee.setPhoneNumber(employeeDto.getPhoneNumber());
         existingEmployee.setGender(employeeDto.getGender());
         existingEmployee.setMaritalStatus(employeeDto.getMaritalStatus());
         existingEmployee.setNationality(employeeDto.getNationality());
-        existingEmployee.setDateOfBirth(employeeDto.getDateOfBirth());
         existingEmployee.setStreetAddress1(employeeDto.getStreetAddress1());
         existingEmployee.setStreetAddress2(employeeDto.getStreetAddress2());
         existingEmployee.setCity(employeeDto.getCity());
