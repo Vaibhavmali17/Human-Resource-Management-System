@@ -11,6 +11,7 @@ import java.time.LocalDate;
 public class TimesheetDto {
     private Long id;
     private Long employeeId;
+    private String employeeName;
     private LocalDate weekStartDate;
     private Double hoursWorked;
     private TimesheetStatus status;

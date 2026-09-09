@@ -208,6 +208,17 @@ const EmployeeDashboard = () => {
     fetchData();
   }, [activeTab]);
 
+  useEffect(() => {
+    if (success || error) {
+      const timer = setTimeout(() => {
+        if (setSuccess) setSuccess('');
+        if (setError) setError('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
+
+
   const fetchQualifications = async () => {
     try {
       const qData = await employeeService.getQualifications();
@@ -518,10 +529,16 @@ const EmployeeDashboard = () => {
         leaveTypeId: parseInt(leaveForm.leaveTypeId),
         fromDate: leaveForm.fromDate,
         toDate: leaveForm.toDate,
+        startDate: leaveForm.fromDate,
+        endDate: leaveForm.toDate,
         reason: leaveForm.reason
       };
+
       await leaveService.applyLeave(payload);
       setSuccess('Leave request submitted successfully!');
+      setTimeout(() => {
+        setSuccess('');
+      }, 3500);
       setLeaveForm(prev => ({ ...prev, fromDate: '', toDate: '', reason: '' }));
       fetchData();
     } catch (err) {
@@ -532,7 +549,9 @@ const EmployeeDashboard = () => {
         msg = err.message;
       }
       setError(msg);
+      setSuccess('');
     }
+
   };
 
   const handleTimesheetSubmit = async (e) => {
@@ -662,20 +681,33 @@ const EmployeeDashboard = () => {
       {/* Main Content */}
       <div className="main-content">
         <div className="header-container">
-          <div>
+          <div className="header-text-group">
             <h1 className="header-title">Employee Self Service</h1>
             <p className="header-subtitle">Welcome, {user?.username}</p>
           </div>
         </div>
 
-        {error && <div className="alert-box alert-error">{error}</div>}
-        {success && <div className="alert-box alert-success">{success}</div>}
+
+        {error && (
+          <div className="alert-box alert-error" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{error}</span>
+            <button onClick={() => setError('')} className="ml-auto font-bold px-2" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem', lineHeight: '1' }}>×</button>
+          </div>
+        )}
+        {success && (
+          <div className="alert-box alert-success" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{success}</span>
+            <button onClick={() => setSuccess('')} className="ml-auto font-bold px-2" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem', lineHeight: '1' }}>×</button>
+          </div>
+        )}
+
 
         {loading && <div style={{ color: 'var(--text-secondary)', padding: '1.5rem', textAlign: 'center' }}>Loading workspace options...</div>}
 
         {/* Tab 1: Profile Workspace */}
         {!loading && activeTab === 'profile' && profile.id !== null && (
-          <div className="rounded-xl">
+          <div className="tab-content-panel rounded-xl">
+
             {/* ESS Hub Navigation bar */}
             <div className="ess-tabs-nav">
               <button className={`ess-tab-link ${subTab === 'personal' ? 'active' : ''}`} onClick={() => setSubTab('personal')}>
@@ -1296,42 +1328,43 @@ const EmployeeDashboard = () => {
 
         {/* Tab 2: Apply Leave */}
         {activeTab === 'leaves' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div className="tab-content-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
             {/* Top Stat Cards: Leave Balances */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
               {leaveBalances && leaveBalances.length > 0 ? (
                 leaveBalances.map(b => (
-                  <div key={b.id} className="rounded-xl" style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-dark)', border: '1px solid var(--border-color)' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div key={b.id} className="rounded-xl" style={{ padding: '0.85rem 1.15rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', background: '#111c44', border: '1px solid #1e293b' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       {b.leaveTypeName}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                      <span style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
                         {b.remainingDays}
                       </span>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         / {b.totalDays} Days Left
                       </span>
                     </div>
-                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.25rem' }}>
+                    <div style={{ height: '5px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.15rem' }}>
                       <div style={{ height: '100%', width: `${Math.min(100, Math.max(0, (b.remainingDays / (b.totalDays || 1)) * 100))}%`, background: 'var(--primary-blue)', borderRadius: '3px', transition: 'width 0.3s ease' }}></div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div style={{ color: 'var(--text-secondary)' }}>Loading leave balances...</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Loading leave balances...</div>
               )}
             </div>
 
             {/* Main Leave Workspace Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '2rem', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '1.25rem', alignItems: 'start' }}>
               {/* Apply For Leave Card */}
-              <div className="rounded-xl" style={{ padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1.25rem 0', fontSize: '1.2rem' }}>
+              <div className="rounded-xl" style={{ padding: '1.15rem 1.35rem', background: '#111c44', border: '1px solid #1e293b' }}>
+                <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 0.85rem 0', fontSize: '1.05rem' }}>
                   Apply For Leave
                 </h3>
                 <form onSubmit={handleLeaveSubmit}>
-                  <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
                     <label className="form-label">Leave Type</label>
                     <select
                       className="form-input"
@@ -1345,8 +1378,8 @@ const EmployeeDashboard = () => {
                     </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
-                    <div className="form-group">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">From Date</label>
                       <input
                         type="date"
@@ -1356,7 +1389,7 @@ const EmployeeDashboard = () => {
                         onChange={e => setLeaveForm({ ...leaveForm, fromDate: e.target.value })}
                       />
                     </div>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">To Date</label>
                       <input
                         type="date"
@@ -1370,9 +1403,9 @@ const EmployeeDashboard = () => {
 
                   {/* Days Duration Preview */}
                   {leaveForm.fromDate && leaveForm.toDate && (
-                    <div style={{ marginBottom: '1.25rem', padding: '0.6rem 1rem', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>Calculated Duration:</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
+                    <div style={{ marginBottom: '0.75rem', padding: '0.45rem 0.75rem', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Calculated Duration:</span>
+                      <span style={{ fontSize: '0.875rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
                         {(() => {
                           const d1 = new Date(leaveForm.fromDate);
                           const d2 = new Date(leaveForm.toDate);
@@ -1384,11 +1417,12 @@ const EmployeeDashboard = () => {
                     </div>
                   )}
 
-                  <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
                     <label className="form-label">Reason for Time-off</label>
                     <textarea
-                      rows="3"
+                      rows="2"
                       className="form-input"
+                      style={{ height: '65px', minHeight: '65px' }}
                       placeholder="Specify clear reason for leave request..."
                       value={leaveForm.reason}
                       onChange={e => setLeaveForm({ ...leaveForm, reason: e.target.value })}
@@ -1403,33 +1437,33 @@ const EmployeeDashboard = () => {
               </div>
 
               {/* Leave History Table Card */}
-              <div className="rounded-xl" style={{ padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1.25rem 0', fontSize: '1.2rem' }}>
+              <div className="rounded-xl" style={{ padding: '1.15rem 1.35rem', background: '#111c44', border: '1px solid #1e293b' }}>
+                <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 0.85rem 0', fontSize: '1.05rem' }}>
                   My Leave History
                 </h3>
-                <div className="data-table-container">
+                <div className="data-table-container" style={{ marginTop: '0.5rem' }}>
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <th>Leave Type</th>
-                        <th>Dates</th>
-                        <th>Days</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
+                        <th style={{ padding: '0.5rem 0.6rem', fontSize: '0.78rem' }}>Leave Type</th>
+                        <th style={{ padding: '0.5rem 0.6rem', fontSize: '0.78rem' }}>Dates</th>
+                        <th style={{ padding: '0.5rem 0.6rem', fontSize: '0.78rem' }}>Days</th>
+                        <th style={{ padding: '0.5rem 0.6rem', fontSize: '0.78rem' }}>Status</th>
+                        <th style={{ padding: '0.5rem 0.6rem', fontSize: '0.78rem' }}>Remarks</th>
                       </tr>
                     </thead>
                     <tbody>
                       {leaves && leaves.length > 0 ? (
                         leaves.map(req => (
                           <tr key={req.id}>
-                            <td><strong>{req.leaveTypeName}</strong></td>
-                            <td style={{ fontSize: '0.85rem' }}>{req.fromDate} to {req.toDate}</td>
-                            <td>{req.durationDays}</td>
-                            <td>
+                            <td style={{ padding: '0.55rem 0.6rem', fontSize: '0.82rem' }}><strong>{req.leaveTypeName}</strong></td>
+                            <td style={{ padding: '0.55rem 0.6rem', fontSize: '0.8rem' }}>{req.fromDate} to {req.toDate}</td>
+                            <td style={{ padding: '0.55rem 0.6rem', fontSize: '0.82rem' }}>{req.durationDays}</td>
+                            <td style={{ padding: '0.55rem 0.6rem' }}>
                               <span style={{
-                                padding: '0.25rem 0.6rem',
+                                padding: '0.2rem 0.5rem',
                                 borderRadius: '9999px',
-                                fontSize: '0.78rem',
+                                fontSize: '0.75rem',
                                 fontWeight: '600',
                                 background: req.status === 'APPROVED' ? 'rgba(34,197,94,0.15)' : req.status === 'REJECTED' ? 'rgba(239,68,68,0.15)' : 'rgba(234,179,8,0.15)',
                                 color: req.status === 'APPROVED' ? '#4ade80' : req.status === 'REJECTED' ? '#f87171' : '#facc15',
@@ -1438,14 +1472,14 @@ const EmployeeDashboard = () => {
                                 {req.status}
                               </span>
                             </td>
-                            <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                            <td style={{ padding: '0.55rem 0.6rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                               {req.adminRemarks || req.reason || '-'}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="5" className="empty-row">No leave applications found.</td>
+                          <td colSpan="5" className="empty-row" style={{ padding: '1rem', fontSize: '0.85rem' }}>No leave applications found.</td>
                         </tr>
                       )}
                     </tbody>
@@ -1456,9 +1490,10 @@ const EmployeeDashboard = () => {
           </div>
         )}
 
+
         {/* Tab 3: Submit Timesheets */}
         {activeTab === 'timesheets' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
+          <div className="tab-content-panel" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
             <div className="rounded-xl" style={{ padding: '2rem' }}>
               <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1rem 0' }}>Log Work Hours</h3>
               <form onSubmit={handleTimesheetSubmit}>
@@ -1510,7 +1545,8 @@ const EmployeeDashboard = () => {
 
         {/* Tab 4: Performance */}
         {activeTab === 'perf' && (
-          <div className="rounded-xl" style={{ padding: '2rem' }}>
+          <div className="tab-content-panel rounded-xl" style={{ padding: '2rem' }}>
+
             <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1.5rem 0' }}>Performance Appraisal History</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>

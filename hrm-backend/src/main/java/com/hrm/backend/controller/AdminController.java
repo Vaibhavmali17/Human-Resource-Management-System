@@ -121,6 +121,11 @@ public class AdminController {
     }
 
     // Performance Appraisals Admin Input
+    @GetMapping("/performance")
+    public ResponseEntity<List<PerformanceDto>> getAllPerformanceReviews() {
+        return ResponseEntity.ok(performanceService.getAllPerformanceReviews());
+    }
+
     @PostMapping("/performance")
     public ResponseEntity<PerformanceDto> createPerformanceReview(@RequestBody PerformanceDto performanceDto,
                                                                    @AuthenticationPrincipal UserPrincipal currentUser) {

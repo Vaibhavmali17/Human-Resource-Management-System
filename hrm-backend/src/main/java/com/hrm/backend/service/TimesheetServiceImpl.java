@@ -69,7 +69,10 @@ public class TimesheetServiceImpl implements TimesheetService {
     private TimesheetDto mapToDto(Timesheet ts) {
         TimesheetDto dto = new TimesheetDto();
         dto.setId(ts.getId());
-        dto.setEmployeeId(ts.getEmployee().getId());
+        if (ts.getEmployee() != null) {
+            dto.setEmployeeId(ts.getEmployee().getId());
+            dto.setEmployeeName(ts.getEmployee().getFirstName() + " " + ts.getEmployee().getLastName());
+        }
         dto.setWeekStartDate(ts.getWeekStartDate());
         dto.setHoursWorked(ts.getHoursWorked());
         dto.setStatus(ts.getStatus());

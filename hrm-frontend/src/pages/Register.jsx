@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
-  const [role, setRole] = useState('ROLE_EMPLOYEE'); // 'ROLE_EMPLOYEE' or 'ROLE_ADMIN'
+  const role = 'ROLE_EMPLOYEE';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -31,13 +31,13 @@ const Register = () => {
         firstName,
         lastName,
         phone,
-        department: role === 'ROLE_ADMIN' ? (department || 'Administration') : department,
-        designation: role === 'ROLE_ADMIN' ? (designation || 'HR Admin') : designation,
+        department,
+        designation,
         dateOfJoining: dateOfJoining || null,
         address
       };
       await register(username, password, email, role, onboardingData);
-      setSuccess(`Registration successful for ${role === 'ROLE_ADMIN' ? 'HR / Admin' : 'Employee'}! Redirecting to login...`);
+      setSuccess('Registration successful for Employee! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -82,7 +82,7 @@ const Register = () => {
     fontWeight: 'bold',
     marginBottom: '0.25rem',
     textAlign: 'center',
-    color: role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e',
+    color: '#22c55e',
     transition: 'all 0.3s ease'
   };
 
@@ -92,31 +92,6 @@ const Register = () => {
     marginBottom: '1.5rem',
     textAlign: 'center'
   };
-
-  const tabContainerStyle = {
-    display: 'flex',
-    background: 'rgba(15, 23, 42, 0.6)',
-    borderRadius: '10px',
-    padding: '4px',
-    marginBottom: '1.75rem',
-    border: '1px solid rgba(255, 255, 255, 0.05)'
-  };
-
-  const getTabStyle = (r) => ({
-    flex: 1,
-    padding: '0.6rem 0.5rem',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    background: role === r 
-      ? (r === 'ROLE_ADMIN' ? 'linear-gradient(135deg, #e11d48, #be123c)' : 'linear-gradient(135deg, #16a34a, #15803d)')
-      : 'transparent',
-    color: role === r ? '#ffffff' : '#94a3b8',
-    boxShadow: role === r ? '0 4px 12px rgba(0, 0, 0, 0.3)' : 'none'
-  });
 
   const inputGroupStyle = {
     marginBottom: '1.25rem'
@@ -146,9 +121,7 @@ const Register = () => {
   const buttonStyle = {
     width: '100%',
     padding: '0.75rem',
-    background: role === 'ROLE_ADMIN' 
-      ? 'linear-gradient(135deg, #e11d48, #be123c)' 
-      : 'linear-gradient(135deg, #22c55e, #15803d)',
+    background: 'linear-gradient(135deg, #22c55e, #15803d)',
     border: 'none',
     borderRadius: '8px',
     color: '#fff',
@@ -156,35 +129,15 @@ const Register = () => {
     fontWeight: '600',
     cursor: 'pointer',
     marginTop: '1.5rem',
-    boxShadow: role === 'ROLE_ADMIN'
-      ? '0 4px 12px rgba(225, 29, 72, 0.3)'
-      : '0 4px 12px rgba(34, 197, 94, 0.3)',
+    boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
     transition: 'all 0.2s ease'
   };
 
   return (
     <div style={containerStyle}>
       <div style={cardStyle}>
-        <h2 style={titleStyle}>Create Account</h2>
+        <h2 style={titleStyle}>Employee Registration</h2>
         <p style={subtitleStyle}>Join the enterprise resource management portal</p>
-        
-        {/* Role Switcher Tabs */}
-        <div style={tabContainerStyle}>
-          <button 
-            type="button" 
-            style={getTabStyle('ROLE_EMPLOYEE')} 
-            onClick={() => { setRole('ROLE_EMPLOYEE'); setError(''); }}
-          >
-            Employee Registration
-          </button>
-          <button 
-            type="button" 
-            style={getTabStyle('ROLE_ADMIN')} 
-            onClick={() => { setRole('ROLE_ADMIN'); setError(''); }}
-          >
-            HR / Admin Registration
-          </button>
-        </div>
 
         {error && (
           <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', borderRadius: '8px', padding: '0.75rem', color: '#fca5a5', fontSize: '0.875rem', marginBottom: '1.5rem', textAlign: 'center' }}>
@@ -200,13 +153,13 @@ const Register = () => {
 
         <form onSubmit={handleSubmit}>
           <div style={inputGroupStyle}>
-            <label style={labelStyle}>{role === 'ROLE_ADMIN' ? 'HR / Admin Username' : 'Employee Username'}</label>
+            <label style={labelStyle}>Employee Username</label>
             <input 
               type="text" 
               required 
               style={inputStyle} 
-              placeholder={role === 'ROLE_ADMIN' ? 'e.g. hr_admin' : 'e.g. john_doe'}
-              onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+              placeholder="e.g. john_doe"
+              onFocus={(e) => e.target.style.borderColor = '#22c55e'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -220,7 +173,7 @@ const Register = () => {
               required 
               style={inputStyle}
               placeholder="e.g. user@company.com"
-              onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+              onFocus={(e) => e.target.style.borderColor = '#22c55e'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -234,7 +187,7 @@ const Register = () => {
               required 
               style={inputStyle}
               placeholder="••••••••"
-              onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+              onFocus={(e) => e.target.style.borderColor = '#22c55e'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -242,8 +195,8 @@ const Register = () => {
           </div>
 
           <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1rem', marginTop: '1rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', color: role === 'ROLE_ADMIN' ? '#fb923c' : '#38bdf8' }}>
-              {role === 'ROLE_ADMIN' ? 'HR / Admin Details' : 'Employee Onboarding Details'}
+            <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', color: '#38bdf8' }}>
+              Employee Onboarding Details
             </h3>
             
             <div style={inputGroupStyle}>
@@ -253,7 +206,7 @@ const Register = () => {
                 required 
                 style={inputStyle}
                 placeholder="e.g. John"
-                onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -267,7 +220,7 @@ const Register = () => {
                 required 
                 style={inputStyle}
                 placeholder="e.g. Doe"
-                onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -279,7 +232,7 @@ const Register = () => {
               <input 
                 type="text" 
                 style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
                 placeholder="e.g. +1234567890"
                 value={phone}
@@ -292,9 +245,9 @@ const Register = () => {
               <input 
                 type="text" 
                 style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                placeholder={role === 'ROLE_ADMIN' ? 'Administration' : 'e.g. Engineering'}
+                placeholder="e.g. Engineering"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
               />
@@ -305,51 +258,47 @@ const Register = () => {
               <input 
                 type="text" 
                 style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = role === 'ROLE_ADMIN' ? '#f43f5e' : '#22c55e'}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                placeholder={role === 'ROLE_ADMIN' ? 'HR Admin' : 'e.g. Software Engineer'}
+                placeholder="e.g. Software Engineer"
                 value={designation}
                 onChange={(e) => setDesignation(e.target.value)}
               />
             </div>
 
-            {role === 'ROLE_EMPLOYEE' && (
-              <>
-                <div style={inputGroupStyle}>
-                  <label style={labelStyle}>Date of Joining</label>
-                  <input 
-                    type="date" 
-                    style={inputStyle}
-                    onFocus={(e) => e.target.style.borderColor = '#22c55e'}
-                    onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                    value={dateOfJoining}
-                    onChange={(e) => setDateOfJoining(e.target.value)}
-                  />
-                </div>
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Date of Joining</label>
+              <input 
+                type="date" 
+                style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                value={dateOfJoining}
+                onChange={(e) => setDateOfJoining(e.target.value)}
+              />
+            </div>
 
-                <div style={inputGroupStyle}>
-                  <label style={labelStyle}>Address</label>
-                  <input 
-                    type="text" 
-                    style={inputStyle}
-                    onFocus={(e) => e.target.style.borderColor = '#22c55e'}
-                    onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                    placeholder="e.g. 123 Main St, City"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                </div>
-              </>
-            )}
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Address</label>
+              <input 
+                type="text" 
+                style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = '#22c55e'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                placeholder="e.g. 123 Main St, City"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
           </div>
 
           <button type="submit" style={buttonStyle}>
-            Register as {role === 'ROLE_ADMIN' ? 'HR / Admin' : 'Employee'}
+            Register as Employee
           </button>
         </form>
 
         <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#94a3b8' }}>
-          Already have an account? <Link to="/login" style={{ color: role === 'ROLE_ADMIN' ? '#fb923c' : '#22c55e', textDecoration: 'none', fontWeight: '500' }}>Login here</Link>
+          Already have an account? <Link to="/login" style={{ color: '#22c55e', textDecoration: 'none', fontWeight: '500' }}>Login here</Link>
         </p>
       </div>
     </div>

@@ -38,22 +38,21 @@ public class LeaveServiceImpl implements LeaveService {
     }
 
     private void ensureSchema() {
-        try {
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS duration_days DOUBLE PRECISION DEFAULT 1.0");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS from_date DATE");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS to_date DATE");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS leave_type_id BIGINT");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS admin_remarks TEXT");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS reason TEXT");
-            jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'PENDING'");
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS duration_days DOUBLE PRECISION DEFAULT 1.0"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS from_date DATE"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS to_date DATE"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS leave_type_id BIGINT"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS admin_remarks TEXT"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS reason TEXT"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'PENDING'"); } catch (Exception ignored) {}
 
-            jdbcTemplate.execute("INSERT INTO leave_types (name, default_days_per_year) VALUES ('Casual Leave', 12.0), ('Sick Leave', 10.0), ('Annual Leave', 15.0) ON CONFLICT DO NOTHING");
-            jdbcTemplate.execute("UPDATE leave_requests SET leave_type_id = (SELECT id FROM leave_types ORDER BY id ASC LIMIT 1) WHERE leave_type_id IS NULL");
-            jdbcTemplate.execute("UPDATE leave_balances SET leave_type_id = (SELECT id FROM leave_types ORDER BY id ASC LIMIT 1) WHERE leave_type_id IS NULL");
-        } catch (Exception ignored) {
-        }
+        try { jdbcTemplate.execute("INSERT INTO leave_types (name, default_days_per_year) VALUES ('Casual Leave', 12.0), ('Sick Leave', 10.0), ('Annual Leave', 15.0) ON CONFLICT DO NOTHING"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("UPDATE leave_requests SET leave_type_id = (SELECT id FROM leave_types ORDER BY id ASC LIMIT 1) WHERE leave_type_id IS NULL"); } catch (Exception ignored) {}
+        try { jdbcTemplate.execute("UPDATE leave_balances SET leave_type_id = (SELECT id FROM leave_types ORDER BY id ASC LIMIT 1) WHERE leave_type_id IS NULL"); } catch (Exception ignored) {}
     }
+
+
 
     private void seedDefaultLeaveTypesIfEmpty() {
         ensureSchema();
@@ -128,17 +127,20 @@ public class LeaveServiceImpl implements LeaveService {
         Employee employee = getOrCreateEmployee(userId);
         ensureDefaultBalancesForEmployee(employee);
 
-        if (applyDto.getFromDate() == null || applyDto.getToDate() == null) {
+        java.time.LocalDate from = applyDto.getFromDate() != null ? applyDto.getFromDate() : applyDto.getStartDate();
+        java.time.LocalDate to = applyDto.getToDate() != null ? applyDto.getToDate() : applyDto.getEndDate();
+
+        if (from == null || to == null) {
             throw new IllegalArgumentException("From Date and To Date are required.");
         }
-        if (applyDto.getToDate().isBefore(applyDto.getFromDate())) {
+        if (to.isBefore(from)) {
             throw new IllegalArgumentException("To Date cannot be before From Date.");
         }
 
         LeaveType leaveType = leaveTypeRepository.findById(applyDto.getLeaveTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveType", "id", applyDto.getLeaveTypeId()));
 
-        double duration = ChronoUnit.DAYS.between(applyDto.getFromDate(), applyDto.getToDate()) + 1.0;
+        double duration = ChronoUnit.DAYS.between(from, to) + 1.0;
 
         LeaveBalance balance = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeId(employee.getId(), leaveType.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveBalance", "leaveTypeId", leaveType.getId()));
@@ -151,12 +153,14 @@ public class LeaveServiceImpl implements LeaveService {
         LeaveRequest request = new LeaveRequest();
         request.setEmployee(employee);
         request.setLeaveType(leaveType);
-        request.setFromDate(applyDto.getFromDate());
-        request.setToDate(applyDto.getToDate());
+        request.setFromDate(from);
+        request.setToDate(to);
         request.setDurationDays(duration);
         request.setReason(applyDto.getReason());
         request.setStatus(LeaveStatus.PENDING);
         request.setAppliedOn(LocalDateTime.now());
+
+
 
         LeaveRequest saved = leaveRequestRepository.save(request);
         return mapToRequestDto(saved);

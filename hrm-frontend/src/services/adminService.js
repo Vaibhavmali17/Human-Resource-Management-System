@@ -43,3 +43,35 @@ export const approveTimesheet = async (id, status) => {
   });
   return response.data;
 };
+
+export const getAllRecruitments = async () => {
+  const response = await axiosInstance.get('/api/admin/recruitments');
+  return response.data;
+};
+
+export const createRecruitment = async (data) => {
+  const response = await axiosInstance.post('/api/admin/recruitments', data);
+  return response.data;
+};
+
+export const updateRecruitmentStatus = async (id, status, feedback) => {
+  const response = await axiosInstance.put(`/api/admin/recruitments/${id}`, null, {
+    params: { status, feedback }
+  });
+  return response.data;
+};
+
+export const deleteRecruitment = async (id) => {
+  const response = await axiosInstance.delete(`/api/admin/recruitments/${id}`);
+  return response.data;
+};
+
+export const getAllPerformanceReviews = async () => {
+  const response = await axiosInstance.get('/api/admin/performance');
+  return response.data;
+};
+
+export const createPerformanceReview = async (data) => {
+  const response = await axiosInstance.post('/api/admin/performance', data);
+  return response.data;
+};

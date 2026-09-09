@@ -58,7 +58,28 @@ body,
   box-sizing: border-box;
   width: 100%;
   height: 100%;
+  background-color: #0b1329 !important;
+  overflow-x: hidden !important;
 }
+
+
+/* Global Input & Dropdown Styling */
+input,
+textarea,
+select {
+  color: #f8fafc;
+  background-color: #0f172a;
+}
+
+select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
 
 #root {
   text-align: center;
