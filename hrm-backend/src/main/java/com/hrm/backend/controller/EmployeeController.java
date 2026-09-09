@@ -269,16 +269,13 @@ public class EmployeeController {
     // Leaves Submission
     @PostMapping("/leaves")
     public ResponseEntity<LeaveRequestDto> applyLeave(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                      @RequestBody LeaveRequestDto leaveRequestDto) {
-        EmployeeDto existingEmployee = employeeService.getEmployeeByUserId(currentUser.getId());
-        leaveRequestDto.setEmployeeId(existingEmployee.getId());
-        return new ResponseEntity<>(leaveService.applyLeave(leaveRequestDto), HttpStatus.CREATED);
+                                                      @RequestBody ApplyLeaveDto applyDto) {
+        return new ResponseEntity<>(leaveService.applyLeave(currentUser.getId(), applyDto), HttpStatus.CREATED);
     }
 
     @GetMapping("/leaves")
     public ResponseEntity<List<LeaveRequestDto>> getMyLeaves(@AuthenticationPrincipal UserPrincipal currentUser) {
-        EmployeeDto existingEmployee = employeeService.getEmployeeByUserId(currentUser.getId());
-        return ResponseEntity.ok(leaveService.getLeavesByEmployee(existingEmployee.getId()));
+        return ResponseEntity.ok(leaveService.getMyLeaveHistory(currentUser.getId()));
     }
 
     // Timesheet Submission

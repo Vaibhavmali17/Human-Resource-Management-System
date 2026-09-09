@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as employeeService from '../../services/employeeService';
+import { leaveService } from '../../services/leaveService';
 import './EmployeeDashboard.css';
 
 const EmployeeDashboard = () => {
@@ -37,6 +38,8 @@ const EmployeeDashboard = () => {
   });
 
   const [leaves, setLeaves] = useState([]);
+  const [leaveBalances, setLeaveBalances] = useState([]);
+  const [leaveTypes, setLeaveTypes] = useState([]);
   const [timesheets, setTimesheets] = useState([]);
   const [performances, setPerformances] = useState([]);
   const [error, setError] = useState('');
@@ -44,7 +47,7 @@ const EmployeeDashboard = () => {
   const [loading, setLoading] = useState(false);
 
   // Form states for leaves/timesheets
-  const [leaveForm, setLeaveForm] = useState({ startDate: '', endDate: '', leaveType: 'ANNUAL', reason: '' });
+  const [leaveForm, setLeaveForm] = useState({ leaveTypeId: '', fromDate: '', toDate: '', reason: '' });
   const [tsForm, setTsForm] = useState({ weekStartDate: '', hoursWorked: '', comments: '' });
 
   // Modals state & editing tracking
@@ -254,8 +257,17 @@ const EmployeeDashboard = () => {
         });
         await fetchQualifications();
       } else if (activeTab === 'leaves') {
-        const data = await employeeService.getLeaves();
-        setLeaves(data);
+        const [balancesData, typesData, historyData] = await Promise.all([
+          leaveService.getLeaveBalances(),
+          leaveService.getLeaveTypes(),
+          leaveService.getMyLeaveHistory()
+        ]);
+        setLeaveBalances(balancesData || []);
+        setLeaveTypes(typesData || []);
+        setLeaves(historyData || []);
+        if (typesData && typesData.length > 0 && !leaveForm.leaveTypeId) {
+          setLeaveForm(prev => ({ ...prev, leaveTypeId: typesData[0].id }));
+        }
       } else if (activeTab === 'timesheets') {
         const data = await employeeService.getTimesheets();
         setTimesheets(data);
@@ -502,12 +514,24 @@ const EmployeeDashboard = () => {
     setError('');
     setSuccess('');
     try {
-      await employeeService.applyLeave(leaveForm);
-      setSuccess('Leave request applied.');
-      setLeaveForm({ startDate: '', endDate: '', leaveType: 'ANNUAL', reason: '' });
+      const payload = {
+        leaveTypeId: parseInt(leaveForm.leaveTypeId),
+        fromDate: leaveForm.fromDate,
+        toDate: leaveForm.toDate,
+        reason: leaveForm.reason
+      };
+      await leaveService.applyLeave(payload);
+      setSuccess('Leave request submitted successfully!');
+      setLeaveForm(prev => ({ ...prev, fromDate: '', toDate: '', reason: '' }));
       fetchData();
     } catch (err) {
-      setError('Failed to apply leave request.');
+      let msg = 'Failed to apply leave request.';
+      if (err.response && err.response.data && err.response.data.message) {
+        msg = err.response.data.message;
+      } else if (err.message) {
+        msg = err.message;
+      }
+      setError(msg);
     }
   };
 
@@ -1272,65 +1296,162 @@ const EmployeeDashboard = () => {
 
         {/* Tab 2: Apply Leave */}
         {activeTab === 'leaves' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
-            <div className="rounded-xl" style={{ padding: '2rem' }}>
-              <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1rem 0' }}>Request Time-off</h3>
-              <form onSubmit={handleLeaveSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className="form-group">
-                    <label className="form-label">Start Date</label>
-                    <input type="date" required className="form-input" value={leaveForm.startDate} onChange={e => setLeaveForm({ ...leaveForm, startDate: e.target.value })} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Top Stat Cards: Leave Balances */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+              {leaveBalances && leaveBalances.length > 0 ? (
+                leaveBalances.map(b => (
+                  <div key={b.id} className="rounded-xl" style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-dark)', border: '1px solid var(--border-color)' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {b.leaveTypeName}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
+                        {b.remainingDays}
+                      </span>
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                        / {b.totalDays} Days Left
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginTop: '0.25rem' }}>
+                      <div style={{ height: '100%', width: `${Math.min(100, Math.max(0, (b.remainingDays / (b.totalDays || 1)) * 100))}%`, background: 'var(--primary-blue)', borderRadius: '3px', transition: 'width 0.3s ease' }}></div>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">End Date</label>
-                    <input type="date" required className="form-input" value={leaveForm.endDate} onChange={e => setLeaveForm({ ...leaveForm, endDate: e.target.value })} />
-                  </div>
-                </div>
-                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                  <label className="form-label">Leave Type</label>
-                  <select className="form-input" value={leaveForm.leaveType} onChange={e => setLeaveForm({ ...leaveForm, leaveType: e.target.value })}>
-                    <option value="ANNUAL">Annual Leave</option>
-                    <option value="SICK">Sick Leave</option>
-                    <option value="CASUAL">Casual Leave</option>
-                    <option value="MATERNITY">Maternity Leave</option>
-                    <option value="PATERNITY">Paternity Leave</option>
-                    <option value="UNPAID">Unpaid Leave</option>
-                  </select>
-                </div>
-                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                  <label className="form-label">Reason</label>
-                  <textarea rows="3" className="form-input" value={leaveForm.reason} onChange={e => setLeaveForm({ ...leaveForm, reason: e.target.value })} />
-                </div>
-                <button type="submit" className="submit-btn" style={{ width: '100%', justifyContent: 'center' }}>
-                  Submit Request
-                </button>
-              </form>
+                ))
+              ) : (
+                <div style={{ color: 'var(--text-secondary)' }}>Loading leave balances...</div>
+              )}
             </div>
 
-            <div className="rounded-xl" style={{ padding: '2rem' }}>
-              <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1rem 0' }}>Request History</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>
-                    <th style={{ padding: '0.5rem' }}>Dates</th>
-                    <th style={{ padding: '0.5rem' }}>Type</th>
-                    <th style={{ padding: '0.5rem' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaves.map(req => (
-                    <tr key={req.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem' }}>{req.startDate} to {req.endDate}</td>
-                      <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem' }}>{req.leaveType}</td>
-                      <td style={{ padding: '0.75rem 0.5rem' }}>
-                        <span style={{ padding: '0.25rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', background: req.status === 'APPROVED' ? 'rgba(34,197,94,0.15)' : req.status === 'REJECTED' ? 'rgba(239,68,68,0.15)' : 'rgba(234,179,8,0.15)', color: req.status === 'APPROVED' ? '#86efac' : req.status === 'REJECTED' ? '#fca5a5' : '#fef08a' }}>
-                          {req.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Main Leave Workspace Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '2rem', alignItems: 'start' }}>
+              {/* Apply For Leave Card */}
+              <div className="rounded-xl" style={{ padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1.25rem 0', fontSize: '1.2rem' }}>
+                  Apply For Leave
+                </h3>
+                <form onSubmit={handleLeaveSubmit}>
+                  <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                    <label className="form-label">Leave Type</label>
+                    <select
+                      className="form-input"
+                      value={leaveForm.leaveTypeId}
+                      onChange={e => setLeaveForm({ ...leaveForm, leaveTypeId: e.target.value })}
+                      required
+                    >
+                      {leaveTypes.map(t => (
+                        <option key={t.id} value={t.id}>{t.name} ({t.defaultDaysPerYear} Days/Year)</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">From Date</label>
+                      <input
+                        type="date"
+                        required
+                        className="form-input"
+                        value={leaveForm.fromDate}
+                        onChange={e => setLeaveForm({ ...leaveForm, fromDate: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">To Date</label>
+                      <input
+                        type="date"
+                        required
+                        className="form-input"
+                        value={leaveForm.toDate}
+                        onChange={e => setLeaveForm({ ...leaveForm, toDate: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Days Duration Preview */}
+                  {leaveForm.fromDate && leaveForm.toDate && (
+                    <div style={{ marginBottom: '1.25rem', padding: '0.6rem 1rem', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>Calculated Duration:</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
+                        {(() => {
+                          const d1 = new Date(leaveForm.fromDate);
+                          const d2 = new Date(leaveForm.toDate);
+                          if (isNaN(d1) || isNaN(d2) || d2 < d1) return '0 Days';
+                          const diff = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+                          return `${diff} Day${diff > 1 ? 's' : ''}`;
+                        })()}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                    <label className="form-label">Reason for Time-off</label>
+                    <textarea
+                      rows="3"
+                      className="form-input"
+                      placeholder="Specify clear reason for leave request..."
+                      value={leaveForm.reason}
+                      onChange={e => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <button type="submit" className="submit-btn" style={{ width: '100%', justifyContent: 'center' }}>
+                    Submit Request
+                  </button>
+                </form>
+              </div>
+
+              {/* Leave History Table Card */}
+              <div className="rounded-xl" style={{ padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1.25rem 0', fontSize: '1.2rem' }}>
+                  My Leave History
+                </h3>
+                <div className="data-table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Leave Type</th>
+                        <th>Dates</th>
+                        <th>Days</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaves && leaves.length > 0 ? (
+                        leaves.map(req => (
+                          <tr key={req.id}>
+                            <td><strong>{req.leaveTypeName}</strong></td>
+                            <td style={{ fontSize: '0.85rem' }}>{req.fromDate} to {req.toDate}</td>
+                            <td>{req.durationDays}</td>
+                            <td>
+                              <span style={{
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: '9999px',
+                                fontSize: '0.78rem',
+                                fontWeight: '600',
+                                background: req.status === 'APPROVED' ? 'rgba(34,197,94,0.15)' : req.status === 'REJECTED' ? 'rgba(239,68,68,0.15)' : 'rgba(234,179,8,0.15)',
+                                color: req.status === 'APPROVED' ? '#4ade80' : req.status === 'REJECTED' ? '#f87171' : '#facc15',
+                                border: req.status === 'APPROVED' ? '1px solid rgba(34,197,94,0.3)' : req.status === 'REJECTED' ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(234,179,8,0.3)'
+                              }}>
+                                {req.status}
+                              </span>
+                            </td>
+                            <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                              {req.adminRemarks || req.reason || '-'}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="empty-row">No leave applications found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         )}

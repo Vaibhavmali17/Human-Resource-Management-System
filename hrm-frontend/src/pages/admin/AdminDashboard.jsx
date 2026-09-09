@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as adminService from '../../services/adminService';
+import { leaveService } from '../../services/leaveService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { logout, user } = useAuth();
   const [activeTab, setActiveTab] = useState('employees');
+  const [leaveSubTab, setLeaveSubTab] = useState('pending'); // pending, all
   const [employees, setEmployees] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [timesheets, setTimesheets] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Action modal for leave approval/rejection with remarks
+  const [actionModal, setActionModal] = useState({ show: false, request: null, status: 'APPROVED', remarks: '' });
 
   // Employee Edit Form State
   const [empForm, setEmpForm] = useState({
@@ -26,17 +31,18 @@ const AdminDashboard = () => {
 
   const fetchAllData = async () => {
     setError('');
-    try {
-      const [empData, leavesData, tsData] = await Promise.all([
-        adminService.getAllEmployees(),
-        adminService.getAllLeaves(),
-        adminService.getAllTimesheets()
-      ]);
-      setEmployees(empData || []);
-      setLeaves(leavesData || []);
-      setTimesheets(tsData || []);
-    } catch (err) {
-      setError('Failed to fetch dashboard data from API.');
+    const results = await Promise.allSettled([
+      adminService.getAllEmployees(),
+      leaveService.getAllLeaveRequests(),
+      adminService.getAllTimesheets()
+    ]);
+
+    if (results[0].status === 'fulfilled') setEmployees(results[0].value || []);
+    if (results[1].status === 'fulfilled') setLeaves(results[1].value || []);
+    if (results[2].status === 'fulfilled') setTimesheets(results[2].value || []);
+
+    if (results.some(r => r.status === 'rejected')) {
+      console.warn('Some admin dashboard APIs failed to load:', results);
     }
   };
 
@@ -101,15 +107,35 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLeaveStatus = async (id, status) => {
+  const handleOpenActionModal = (request, status) => {
+    setActionModal({
+      show: true,
+      request,
+      status,
+      remarks: ''
+    });
+  };
+
+  const submitLeaveAction = async () => {
+    if (!actionModal.request) return;
     setError('');
     setSuccess('');
     try {
-      await adminService.approveLeave(id, status);
-      setSuccess(`Leave status updated to ${status}`);
+      await leaveService.processLeaveAction(actionModal.request.id, {
+        status: actionModal.status,
+        adminRemarks: actionModal.remarks
+      });
+      setSuccess(`Leave request #${actionModal.request.id} ${actionModal.status.toLowerCase()} successfully!`);
+      setActionModal({ show: false, request: null, status: 'APPROVED', remarks: '' });
       await fetchAllData();
     } catch (err) {
-      setError('Could not update leave status.');
+      let msg = 'Could not update leave status.';
+      if (err.response && err.response.data && err.response.data.message) {
+        msg = err.response.data.message;
+      } else if (err.message) {
+        msg = err.message;
+      }
+      setError(msg);
     }
   };
 
@@ -397,71 +423,116 @@ const AdminDashboard = () => {
         {activeTab === 'leaves' && (
           <div className="workspace-single-column">
             <div className="card-container">
-              <h3 className="card-header-title">Leaves Review Panel</h3>
-              {leaves.length === 0 ? (
-                <div className="empty-state-container">
-                  <div className="empty-state-icon">📅</div>
-                  <h4 className="empty-state-title">No Leave Requests</h4>
-                  <p className="empty-state-desc">There are no pending or history of leave requests submitted.</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h3 className="card-header-title" style={{ margin: 0 }}>Leave Approvals Engine</h3>
+                <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-dark)', padding: '0.25rem', borderRadius: '9999px', border: '1px solid var(--border-color)' }}>
+                  <button
+                    className={`btn-pill ${leaveSubTab === 'pending' ? 'btn-pill-edit' : ''}`}
+                    style={{ borderRadius: '9999px', padding: '0.35rem 1rem', fontSize: '0.85rem' }}
+                    onClick={() => setLeaveSubTab('pending')}
+                  >
+                    Pending Queue ({leaves.filter(l => l.status === 'PENDING').length})
+                  </button>
+                  <button
+                    className={`btn-pill ${leaveSubTab === 'all' ? 'btn-pill-edit' : ''}`}
+                    style={{ borderRadius: '9999px', padding: '0.35rem 1rem', fontSize: '0.85rem' }}
+                    onClick={() => setLeaveSubTab('all')}
+                  >
+                    All Requests History
+                  </button>
                 </div>
-              ) : (
-                <div className="table-wrapper">
-                  <table className="enterprise-table">
-                    <thead>
-                      <tr>
-                        <th>Employee ID</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Type</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {leaves.map(req => (
-                        <tr key={req.id}>
-                          <td>{req.employeeId}</td>
-                          <td>{req.startDate}</td>
-                          <td>{req.endDate}</td>
-                          <td>
-                            <span className="badge badge-slate">
-                              {req.leaveType || 'General'}
-                            </span>
-                          </td>
-                          <td>{req.reason || 'N/A'}</td>
-                          <td>
-                            <span className={`badge ${
-                              req.status === 'APPROVED' ? 'badge-green' : 
-                              req.status === 'REJECTED' ? 'badge-red' : 'badge-yellow'
-                            }`}>
-                              {req.status}
-                            </span>
-                          </td>
-                          <td>
-                            {req.status === 'PENDING' && (
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button 
-                                  onClick={() => handleLeaveStatus(req.id, 'APPROVED')} 
-                                  className="btn-action-success"
-                                >
-                                  Approve
-                                </button>
-                                <button 
-                                  onClick={() => handleLeaveStatus(req.id, 'REJECTED')} 
-                                  className="btn-action-danger"
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            )}
-                          </td>
+              </div>
+
+              {(() => {
+                const displayedLeaves = leaveSubTab === 'pending' 
+                  ? leaves.filter(l => l.status === 'PENDING')
+                  : leaves;
+
+                if (displayedLeaves.length === 0) {
+                  return (
+                    <div className="empty-state-container">
+                      <div className="empty-state-icon">📅</div>
+                      <h4 className="empty-state-title">No {leaveSubTab === 'pending' ? 'Pending' : ''} Leave Requests</h4>
+                      <p className="empty-state-desc">
+                        {leaveSubTab === 'pending' 
+                          ? 'There are no pending leave requests awaiting approval.' 
+                          : 'No historical leave records found.'}
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="table-wrapper">
+                    <table className="enterprise-table">
+                      <thead>
+                        <tr>
+                          <th>Applicant Name</th>
+                          <th>Department</th>
+                          <th>Leave Type</th>
+                          <th>From - To Dates</th>
+                          <th>Days</th>
+                          <th>Reason</th>
+                          <th>Status</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {displayedLeaves.map(req => (
+                          <tr key={req.id}>
+                            <td>
+                              <strong>{req.employeeName || `Employee #${req.employeeId}`}</strong>
+                            </td>
+                            <td>
+                              <span className={getDeptBadgeClass(req.department)}>
+                                {req.department || 'General'}
+                              </span>
+                            </td>
+                            <td>
+                              <strong>{req.leaveTypeName || 'Leave'}</strong>
+                            </td>
+                            <td style={{ fontSize: '0.85rem' }}>{req.fromDate} to {req.toDate}</td>
+                            <td><strong>{req.durationDays}</strong></td>
+                            <td style={{ maxWidth: '220px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
+                              {req.reason || 'N/A'}
+                            </td>
+                            <td>
+                              <span className={`badge ${
+                                req.status === 'APPROVED' ? 'badge-green' : 
+                                req.status === 'REJECTED' ? 'badge-red' : 'badge-yellow'
+                              }`}>
+                                {req.status}
+                              </span>
+                            </td>
+                            <td>
+                              {req.status === 'PENDING' ? (
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  <button
+                                    onClick={() => handleOpenActionModal(req, 'APPROVED')}
+                                    className="btn-action-success"
+                                  >
+                                    Approve
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenActionModal(req, 'REJECTED')}
+                                    className="btn-action-danger"
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              ) : (
+                                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                                  {req.adminRemarks || 'Completed'}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -533,6 +604,54 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Leave Approval Action Remarks Modal */}
+      {actionModal.show && (
+        <div className="modal-overlay" onClick={() => setActionModal({ show: false, request: null, status: 'APPROVED', remarks: '' })}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '480px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">
+                Confirm Leave {actionModal.status === 'APPROVED' ? 'Approval' : 'Rejection'}
+              </h3>
+              <button className="modal-close-btn" onClick={() => setActionModal({ show: false, request: null, status: 'APPROVED', remarks: '' })}>×</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ background: 'var(--bg-dark)', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
+                <p style={{ margin: '0 0 0.4rem 0' }}><strong>Applicant:</strong> {actionModal.request?.employeeName}</p>
+                <p style={{ margin: '0 0 0.4rem 0' }}><strong>Leave Type:</strong> {actionModal.request?.leaveTypeName}</p>
+                <p style={{ margin: '0 0 0.4rem 0' }}><strong>Dates & Duration:</strong> {actionModal.request?.fromDate} to {actionModal.request?.toDate} ({actionModal.request?.durationDays} Days)</p>
+                <p style={{ margin: 0 }}><strong>Reason:</strong> {actionModal.request?.reason}</p>
+              </div>
+
+              <div>
+                <label className="form-label">Admin Remarks / Notes (Optional)</label>
+                <textarea
+                  className="form-input"
+                  rows="3"
+                  placeholder={actionModal.status === 'APPROVED' ? "e.g. Approved. Enjoy your time off!" : "e.g. Project deliverable deadline clash."}
+                  value={actionModal.remarks}
+                  onChange={e => setActionModal({ ...actionModal, remarks: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setActionModal({ show: false, request: null, status: 'APPROVED', remarks: '' })}
+              >
+                Cancel
+              </button>
+              <button
+                className={actionModal.status === 'APPROVED' ? 'btn-action-success' : 'btn-action-danger'}
+                style={{ padding: '0.6rem 1.2rem', borderRadius: '6px' }}
+                onClick={submitLeaveAction}
+              >
+                {actionModal.status === 'APPROVED' ? 'Approve Leave' : 'Reject Leave'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

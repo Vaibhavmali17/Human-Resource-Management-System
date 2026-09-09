@@ -1,25 +1,15 @@
-package com.hrm.backend.entity;
+package com.hrm.backend.dto;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "leave_types")
-public class LeaveType {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class LeaveTypeDto {
     private Long id;
-
-    @Column(nullable = false, unique = true)
     private String name;
-
-    @Column(nullable = false)
     private Double defaultDaysPerYear;
 
-    public LeaveType() {
+    public LeaveTypeDto() {
     }
 
-    public LeaveType(String name, Double defaultDaysPerYear) {
+    public LeaveTypeDto(Long id, String name, Double defaultDaysPerYear) {
+        this.id = id;
         this.name = name;
         this.defaultDaysPerYear = defaultDaysPerYear;
     }

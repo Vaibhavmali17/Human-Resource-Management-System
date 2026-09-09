@@ -70,15 +70,16 @@ public class AdminController {
     // Leave Management Admin Approvals
     @GetMapping("/leaves")
     public ResponseEntity<List<LeaveRequestDto>> getAllLeaves() {
-        return ResponseEntity.ok(leaveService.getAllLeaves());
+        return ResponseEntity.ok(leaveService.getAllLeaveRequests());
     }
 
     @PutMapping("/leaves/{id}/approve")
     public ResponseEntity<LeaveRequestDto> approveLeave(@PathVariable Long id,
                                                         @RequestParam String status,
                                                         @AuthenticationPrincipal UserPrincipal currentUser) {
-        EmployeeDto adminEmployee = employeeService.getEmployeeByUserId(currentUser.getId());
-        return ResponseEntity.ok(leaveService.updateLeaveStatus(id, status, adminEmployee.getId()));
+        com.hrm.backend.entity.LeaveStatus leaveStatus = com.hrm.backend.entity.LeaveStatus.valueOf(status.toUpperCase());
+        LeaveActionDto actionDto = new LeaveActionDto(leaveStatus, "Processed by Admin");
+        return ResponseEntity.ok(leaveService.processLeaveAction(id, actionDto));
     }
 
     // Timesheet Management Admin Verification
