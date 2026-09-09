@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const mustChange = localStorage.getItem('mustChangePassword') === 'true';
     if (token) {
       const decoded = decodeToken(token);
       if (decoded && decoded.exp * 1000 > Date.now()) {
@@ -32,9 +33,11 @@ export const AuthProvider = ({ children }) => {
           username: decoded.sub,
           userId: decoded.userId,
           roles: decoded.roles || [],
+          mustChangePassword: mustChange,
         });
       } else {
         localStorage.removeItem('token');
+        localStorage.removeItem('mustChangePassword');
       }
     }
     setLoading(false);
@@ -45,12 +48,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authService.login(username, password);
       const token = data.accessToken;
+      const mustChange = !!data.mustChangePassword;
       localStorage.setItem('token', token);
+      localStorage.setItem('mustChangePassword', mustChange ? 'true' : 'false');
       const decoded = decodeToken(token);
       const loggedUser = {
         username: decoded.sub,
         userId: decoded.userId,
         roles: decoded.roles || [],
+        mustChangePassword: mustChange,
       };
       setUser(loggedUser);
       setLoading(false);
@@ -61,17 +67,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserMustChangePassword = (val) => {
+    localStorage.setItem('mustChangePassword', val ? 'true' : 'false');
+    setUser((prev) => (prev ? { ...prev, mustChangePassword: val } : null));
+  };
+
   const registerUser = async (username, password, email, role, onboardingData = {}) => {
     return await authService.register(username, password, email, role, onboardingData);
   };
 
   const logoutUser = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('mustChangePassword');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login: loginUser, register: registerUser, logout: logoutUser }}>
+    <AuthContext.Provider value={{ user, loading, login: loginUser, register: registerUser, logout: logoutUser, updateUserMustChangePassword }}>
       {children}
     </AuthContext.Provider>
   );

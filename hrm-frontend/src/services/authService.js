@@ -15,3 +15,8 @@ export const register = async (username, password, email, role, onboardingData =
   });
   return response.data;
 };
+
+export const changePassword = async (currentPassword, newPassword) => {
+  const response = await axiosInstance.put('/api/auth/change-password', { currentPassword, newPassword });
+  return response.data;
+};

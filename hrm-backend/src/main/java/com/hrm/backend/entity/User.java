@@ -38,6 +38,10 @@ public class User {
     @Builder.Default
     private boolean enabled = true;
 
+    @Column(name = "must_change_password", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private Boolean mustChangePassword = false;
+
     @Column(name = "first_name", length = 50)
     private String firstName;
 

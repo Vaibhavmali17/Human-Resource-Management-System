@@ -40,6 +40,11 @@ public class AdminController {
         return ResponseEntity.ok(authService.registerAdmin(signupRequest));
     }
 
+    @PostMapping("/onboard-hr")
+    public ResponseEntity<java.util.Map<String, String>> onboardHr(@RequestBody HrOnboardRequest request) {
+        return ResponseEntity.ok(authService.onboardHr(request));
+    }
+
     // PIM - Employee CRUD
     @PostMapping("/employees")
     public ResponseEntity<EmployeeDto> createEmployee(@RequestBody EmployeeDto employeeDto) {

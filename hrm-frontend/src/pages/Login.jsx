@@ -236,9 +236,15 @@ const Login = () => {
           </button>
         </form>
 
-        <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#94a3b8' }}>
-          Don't have an account? <Link to="/register" style={{ color: portalRole === 'ADMIN' ? '#fb923c' : '#38bdf8', textDecoration: 'none', fontWeight: '500' }}>Register here</Link>
-        </p>
+        {portalRole === 'ADMIN' ? (
+          <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#94a3b8' }}>
+            Don't have HR access? Contact your system administrator.
+          </p>
+        ) : (
+          <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#94a3b8' }}>
+            Don't have an account? <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: '500' }}>Register here</Link>
+          </p>
+        )}
       </div>
     </div>
   );

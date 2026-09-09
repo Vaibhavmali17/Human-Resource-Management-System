@@ -45,6 +45,12 @@ const AdminDashboard = () => {
     employeeId: '', reviewPeriod: 'Q1 2026', rating: 5, feedback: ''
   });
 
+  // Onboard HR Form State & Modal
+  const [onboardHrForm, setOnboardHrForm] = useState({
+    firstName: '', lastName: '', email: '', department: 'Human Resources', designation: 'HR Executive'
+  });
+  const [showOnboardModal, setShowOnboardModal] = useState(false);
+
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -263,6 +269,30 @@ const AdminDashboard = () => {
     }
   };
 
+  // Onboard HR Handler
+  const handleOnboardHrSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsSubmitting(true);
+    try {
+      const res = await adminService.onboardHR(onboardHrForm);
+      setSuccess(res?.message || 'HR Account onboarded successfully!');
+      setOnboardHrForm({ firstName: '', lastName: '', email: '', department: 'Human Resources', designation: 'HR Executive' });
+      setShowOnboardModal(false);
+      await fetchAllData();
+    } catch (err) {
+      console.error('HR Onboarding Error:', err);
+      let errorMsg = 'Failed to onboard HR account.';
+      if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
+      setError(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Helper Methods
   const getDeptBadgeClass = (dept) => {
     if (!dept) return 'badge badge-slate';
@@ -356,6 +386,9 @@ const AdminDashboard = () => {
             <h1 className="workspace-title">HR Administration Console</h1>
             <p className="workspace-subtitle">Enterprise management directory, leave approvals, recruitment, and performance reviews</p>
           </div>
+          <button className="btn-primary-inline" onClick={() => setShowOnboardModal(true)}>
+            ➕ Onboard New HR
+          </button>
         </div>
 
         {/* Global Error & Success Alerts */}
@@ -1076,6 +1109,92 @@ const AdminDashboard = () => {
                 {actionModal.status === 'APPROVED' ? 'Approve Leave' : 'Reject Leave'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onboard HR Modal */}
+      {showOnboardModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ width: '520px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Onboard New HR / Admin User</h3>
+              <button type="button" className="modal-close-btn" onClick={() => setShowOnboardModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleOnboardHrSubmit}>
+              <div className="input-grid-2col">
+                <div className="form-group-fullw">
+                  <label className="form-label">First Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={onboardHrForm.firstName}
+                    onChange={(e) => setOnboardHrForm({ ...onboardHrForm, firstName: e.target.value })}
+                    placeholder="e.g. Vaibhav"
+                  />
+                </div>
+                <div className="form-group-fullw">
+                  <label className="form-label">Last Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={onboardHrForm.lastName}
+                    onChange={(e) => setOnboardHrForm({ ...onboardHrForm, lastName: e.target.value })}
+                    placeholder="e.g. Mali"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group-fullw">
+                <label className="form-label">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  className="form-input"
+                  value={onboardHrForm.email}
+                  onChange={(e) => setOnboardHrForm({ ...onboardHrForm, email: e.target.value })}
+                  placeholder="e.g. vaibhav@company.com"
+                />
+              </div>
+
+              <div className="input-grid-2col">
+                <div className="form-group-fullw">
+                  <label className="form-label">Department</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={onboardHrForm.department}
+                    onChange={(e) => setOnboardHrForm({ ...onboardHrForm, department: e.target.value })}
+                    placeholder="Human Resources"
+                  />
+                </div>
+                <div className="form-group-fullw">
+                  <label className="form-label">Designation</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={onboardHrForm.designation}
+                    onChange={(e) => setOnboardHrForm({ ...onboardHrForm, designation: e.target.value })}
+                    placeholder="HR Executive"
+                  />
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.5rem', marginBottom: '1.25rem' }}>
+                ℹ️ An invite email with a temporary 10-character password will be sent automatically. The user will be required to change their password on first login.
+              </p>
+
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary-inline" onClick={() => setShowOnboardModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-inline" disabled={isSubmitting}>
+                  {isSubmitting ? 'Sending Invite...' : 'Send Onboarding Invite'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

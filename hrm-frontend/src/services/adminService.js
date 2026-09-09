@@ -75,3 +75,8 @@ export const createPerformanceReview = async (data) => {
   const response = await axiosInstance.post('/api/admin/performance', data);
   return response.data;
 };
+
+export const onboardHR = async (data) => {
+  const response = await axiosInstance.post('/api/admin/onboard-hr', data);
+  return response.data;
+};
