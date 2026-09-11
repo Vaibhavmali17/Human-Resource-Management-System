@@ -80,3 +80,9 @@ export const onboardHR = async (data) => {
   const response = await axiosInstance.post('/api/admin/onboard-hr', data);
   return response.data;
 };
+
+export const sendAdminChatMessage = async (message, history) => {
+  const response = await axiosInstance.post('/api/admin/chat', { message, history });
+  return response.data;
+};
+

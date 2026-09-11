@@ -1,21 +1,5 @@
 /* CSS Styles for Employee Dashboard - ESS Personal & Contact Hub */
 
-:root {
-  --bg-dark: #0b1329;
-  --bg-card: #111c44;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --primary-blue: #38bdf8;
-  --primary-blue-hover: #0284c7;
-  --accent-green: #22c55e;
-  --danger-red: #ef4444;
-  --danger-red-hover: #dc2626;
-  --border-color: #1e293b;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
 .dashboard-container,
 .dashboard-layout {
   display: flex;
@@ -23,28 +7,30 @@
   height: 100vh;
   max-width: 100vw;
   overflow: hidden !important;
-  background-color: #0b1329;
+  background-color: var(--bg-dark);
   box-sizing: border-box;
   color: var(--text-primary);
   font-family: 'Outfit', 'Inter', sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .sidebar {
   width: 260px;
   min-width: 260px;
   height: 100vh;
-  background-color: #111c44;
-  border-right: 1px solid #1e293b;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1.25rem;
   box-sizing: border-box;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .sidebar-title {
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(to right, var(--primary-blue), var(--accent-green));
+  background: var(--accent-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -71,23 +57,26 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
 }
 
 .sidebar-btn:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-card-hover);
   color: var(--text-primary);
 }
 
 .sidebar-btn.active {
-  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
-  color: #ffffff;
-  box-shadow: var(--shadow-sm);
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  font-weight: 600;
+  border-left: 4px solid var(--primary-blue);
+  box-shadow: var(--shadow-glow);
 }
 
 .logout-btn {
   padding: 0.85rem 1rem;
-  background-color: var(--danger-red);
+  background-color: var(--accent-red);
   border: none;
   border-radius: 8px;
   color: #ffffff;
@@ -98,11 +87,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .logout-btn:hover {
-  background-color: var(--danger-red-hover);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .main-content {
@@ -111,8 +101,9 @@
   overflow-y: auto;
   overflow-x: hidden !important;
   padding: 1.5rem 2rem;
-  background-color: #0b1329;
+  background-color: var(--bg-dark);
   box-sizing: border-box;
+  transition: background-color 0.25s ease;
 }
 
 .header-container {
@@ -120,13 +111,14 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: #111c44;
-  border: 1px solid #1e293b;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
   box-sizing: border-box;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--card-shadow);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .header-text-group {
@@ -141,13 +133,13 @@
   font-weight: 700;
   margin: 0;
   padding: 0;
-  color: #f8fafc;
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   text-align: left;
 }
 
 .header-subtitle {
-  color: #38bdf8;
+  color: var(--primary-blue);
   font-size: 0.875rem;
   font-weight: 500;
   margin-top: 4px;
@@ -170,23 +162,22 @@
   transition: opacity 0.3s ease-in-out;
 }
 
-
 .alert-error {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid var(--danger-red);
-  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
 }
 
 .alert-success {
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba(52, 211, 153, 0.12);
   border: 1px solid var(--accent-green);
-  color: #86efac;
+  color: var(--accent-green);
 }
 
 /* Sub-Tab Navigation inside ESS Hub */
 .ess-tabs-nav {
   display: flex;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 1.5rem;
   gap: 1.5rem;
 }
@@ -200,7 +191,7 @@
   font-weight: 600;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .ess-tab-link:hover {
@@ -215,14 +206,18 @@
 /* Rounded Cards */
 .rounded-xl {
   width: 100%;
-  background-color: #111c44;
-  border: 1px solid #1e293b;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem 2rem;
   box-sizing: border-box;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease;
 }
 
+.rounded-xl:hover {
+  border-color: rgba(79, 157, 255, 0.2);
+}
 
 .card-title {
   margin-top: 0;
@@ -234,6 +229,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-primary);
 }
 
 /* Sub-card Sections */
@@ -252,7 +248,7 @@
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-card-hover);
   padding: 1.25rem;
   border-radius: 12px;
   border: 1px dashed var(--border-color);
@@ -276,20 +272,20 @@
 .upload-file-label {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: rgba(56, 189, 248, 0.1);
+  background-color: rgba(79, 157, 255, 0.12);
   color: var(--primary-blue);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(79, 157, 255, 0.3);
   border-radius: 6px;
   font-weight: 650;
   font-size: 0.85rem;
   cursor: pointer;
   text-align: center;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .upload-file-label:hover {
-  background-color: rgba(56, 189, 248, 0.2);
-  border-color: rgba(56, 189, 248, 0.5);
+  background-color: rgba(79, 157, 255, 0.22);
+  transform: translateY(-1px);
 }
 
 .upload-hint {
@@ -326,7 +322,7 @@
 .form-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -335,53 +331,53 @@
 .form-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: var(--bg-dark);
+  background-color: var(--input-bg);
   border: 1px solid var(--border-color);
-  color: #ffffff;
+  color: var(--input-text);
   border-radius: 8px;
   font-size: 0.95rem;
   box-sizing: border-box;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--primary-blue);
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 0 2px rgba(79, 157, 255, 0.2);
 }
 
 /* Locked Fields badge styles */
 .form-input-locked {
-  background-color: rgba(30, 41, 59, 0.7);
-  color: #64748b;
+  background-color: var(--bg-card-hover);
+  color: var(--text-secondary);
   cursor: not-allowed;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
 }
 
 .lock-badge {
   display: inline-flex;
   align-items: center;
   font-size: 0.7rem;
-  background-color: rgba(245, 158, 11, 0.1);
-  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.12);
+  color: var(--accent-yellow);
   padding: 0.15rem 0.35rem;
   border-radius: 4px;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.25);
   margin-left: 0.5rem;
 }
 
 /* Buttons */
 .submit-btn {
   padding: 0.8rem 1.75rem;
-  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+  background: var(--accent-gradient);
   color: #ffffff;
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: all 0.2s;
+  box-shadow: var(--shadow-glow);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -389,7 +385,7 @@
 
 .submit-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 12px -2px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 6px 16px rgba(79, 157, 255, 0.35);
 }
 
 /* Tables styling */
@@ -418,10 +414,11 @@
   padding: 1.1rem 1rem;
   font-size: 0.95rem;
   border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .data-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--bg-card-hover);
 }
 
 .empty-row {
@@ -434,18 +431,17 @@
 .delete-action-btn {
   background: transparent;
   border: none;
-  color: var(--danger-red);
+  color: var(--accent-red);
   cursor: pointer;
   padding: 0.4rem;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .delete-action-btn:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
+  background-color: rgba(248, 113, 113, 0.12);
 }
 
 .edit-action-btn {
@@ -457,12 +453,11 @@
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .edit-action-btn:hover {
-  background-color: rgba(56, 189, 248, 0.1);
-  color: #7dd3fc;
+  background-color: rgba(79, 157, 255, 0.12);
 }
 
 .add-action-btn {
@@ -474,11 +469,11 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .add-action-btn:hover {
-  background-color: var(--border-color);
+  background-color: var(--bg-card-hover);
   color: var(--text-primary);
 }
 
@@ -489,7 +484,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.8);
+  background-color: rgba(11, 17, 32, 0.75);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -505,8 +500,9 @@
   width: 560px;
   max-width: 92%;
   padding: 2rem;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--card-shadow);
   animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-primary);
 }
 
 .modal-header {
@@ -520,6 +516,7 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .modal-close-btn {
@@ -528,7 +525,7 @@
   font-size: 1.5rem;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .modal-close-btn:hover {
@@ -550,27 +547,28 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-card-hover);
   color: var(--text-primary);
 }
 
 .btn-primary {
   padding: 0.6rem 1.2rem;
-  background-color: var(--primary-blue);
+  background: var(--accent-gradient);
   color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 157, 255, 0.3);
 }
 
 /* Qualifications Pill Tabs & Skill Chips */
@@ -596,15 +594,15 @@
 }
 
 .qual-pill-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-card-hover);
   color: var(--text-primary);
 }
 
 .qual-pill-btn.active {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.1));
+  background: var(--bg-card-hover);
   color: var(--primary-blue);
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+  border-color: var(--primary-blue);
+  box-shadow: var(--shadow-glow);
 }
 
 .skills-grid {
@@ -615,7 +613,7 @@
 }
 
 .skill-card {
-  background-color: var(--bg-dark);
+  background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 14px;
   padding: 1.25rem;
@@ -626,9 +624,10 @@
 }
 
 .skill-card:hover {
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  border-color: var(--primary-blue);
+  box-shadow: var(--shadow-glow);
   transform: translateY(-2px);
+  background-color: var(--bg-card-hover);
 }
 
 .skill-card-header {
@@ -664,10 +663,10 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--primary-blue);
-  background-color: rgba(56, 189, 248, 0.12);
+  background-color: rgba(79, 157, 255, 0.12);
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(79, 157, 255, 0.25);
   width: fit-content;
 }
 
@@ -688,4 +687,3 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-

@@ -1,0 +1,46 @@
+/* theme.css - Global HRM System Theme Variables */
+
+:root,
+:root[data-theme="dark"] {
+  --bg-dark: #0b1120;
+  --bg-sidebar: #0f172a;
+  --bg-card: #131b34;
+  --bg-card-hover: #1a2444;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --primary-blue: #4f9dff;
+  --primary-blue-hover: #3b82f6;
+  --accent-gradient: linear-gradient(135deg, #4f9dff 0%, #7c3aed 100%);
+  --accent-green: #34d399;
+  --accent-red: #f87171;
+  --accent-yellow: #fbbf24;
+  --accent-purple: #a78bfa;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --shadow-glow: 0 0 20px rgba(79, 157, 255, 0.15);
+  --input-bg: #0f172a;
+  --input-text: #f8fafc;
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --badge-bg: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="light"] {
+  --bg-dark: #f4f6fb;
+  --bg-sidebar: #eaeef6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --primary-blue: #2563eb;
+  --primary-blue-hover: #1d4ed8;
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --accent-green: #16a34a;
+  --accent-red: #dc2626;
+  --accent-yellow: #d97706;
+  --accent-purple: #7c3aed;
+  --border-color: #e2e8f0;
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.08);
+  --input-bg: #ffffff;
+  --input-text: #0f172a;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --badge-bg: rgba(0, 0, 0, 0.04);
+}

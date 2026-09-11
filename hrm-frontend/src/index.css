@@ -58,8 +58,10 @@ body,
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  background-color: #0b1329 !important;
+  background-color: var(--bg-dark) !important;
+  color: var(--text-primary);
   overflow-x: hidden !important;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 
@@ -67,18 +69,24 @@ body,
 input,
 textarea,
 select {
-  color: #f8fafc;
-  background-color: #0f172a;
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
 }
 
 select option {
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
-input[type="date"] {
+:root[data-theme="dark"] input[type="date"] {
   color-scheme: dark;
 }
+
+:root[data-theme="light"] input[type="date"] {
+  color-scheme: light;
+}
+
 
 
 #root {

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as adminService from '../../services/adminService';
 import { leaveService } from '../../services/leaveService';
+import AiChatWidget from '../../components/AiChatWidget';
+import ThemeToggle from '../../components/ThemeToggle';
 import './AdminDashboard.css';
+
 
 const AdminDashboard = () => {
   const { logout, user } = useAuth();
@@ -386,9 +389,12 @@ const AdminDashboard = () => {
             <h1 className="workspace-title">HR Administration Console</h1>
             <p className="workspace-subtitle">Enterprise management directory, leave approvals, recruitment, and performance reviews</p>
           </div>
-          <button className="btn-primary-inline" onClick={() => setShowOnboardModal(true)}>
-            ➕ Onboard New HR
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <ThemeToggle />
+            <button className="btn-primary-inline" onClick={() => setShowOnboardModal(true)}>
+              ➕ Onboard New HR
+            </button>
+          </div>
         </div>
 
         {/* Global Error & Success Alerts */}
@@ -1198,6 +1204,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+      <AiChatWidget />
     </div>
   );
 };

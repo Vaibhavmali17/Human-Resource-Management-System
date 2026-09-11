@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as employeeService from '../../services/employeeService';
 import { leaveService } from '../../services/leaveService';
+import AiChatWidget from '../../components/AiChatWidget';
+import ThemeToggle from '../../components/ThemeToggle';
 import './EmployeeDashboard.css';
+
 
 const EmployeeDashboard = () => {
   const { logout, user } = useAuth();
@@ -685,6 +688,7 @@ const EmployeeDashboard = () => {
             <h1 className="header-title">Employee Self Service</h1>
             <p className="header-subtitle">Welcome, {user?.username}</p>
           </div>
+          <ThemeToggle />
         </div>
 
 
@@ -1334,7 +1338,7 @@ const EmployeeDashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
               {leaveBalances && leaveBalances.length > 0 ? (
                 leaveBalances.map(b => (
-                  <div key={b.id} className="rounded-xl" style={{ padding: '0.85rem 1.15rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', background: '#111c44', border: '1px solid #1e293b' }}>
+                  <div key={b.id} className="rounded-xl" style={{ padding: '0.85rem 1.15rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       {b.leaveTypeName}
                     </span>
@@ -1359,7 +1363,7 @@ const EmployeeDashboard = () => {
             {/* Main Leave Workspace Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '1.25rem', alignItems: 'start' }}>
               {/* Apply For Leave Card */}
-              <div className="rounded-xl" style={{ padding: '1.15rem 1.35rem', background: '#111c44', border: '1px solid #1e293b' }}>
+              <div className="rounded-xl" style={{ padding: '1.15rem 1.35rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 0.85rem 0', fontSize: '1.05rem' }}>
                   Apply For Leave
                 </h3>
@@ -1403,7 +1407,7 @@ const EmployeeDashboard = () => {
 
                   {/* Days Duration Preview */}
                   {leaveForm.fromDate && leaveForm.toDate && (
-                    <div style={{ marginBottom: '0.75rem', padding: '0.45rem 0.75rem', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ marginBottom: '0.75rem', padding: '0.45rem 0.75rem', background: 'rgba(79,157,255,0.1)', border: '1px solid rgba(79,157,255,0.25)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Calculated Duration:</span>
                       <span style={{ fontSize: '0.875rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
                         {(() => {
@@ -1437,7 +1441,7 @@ const EmployeeDashboard = () => {
               </div>
 
               {/* Leave History Table Card */}
-              <div className="rounded-xl" style={{ padding: '1.15rem 1.35rem', background: '#111c44', border: '1px solid #1e293b' }}>
+              <div className="rounded-xl" style={{ padding: '1.15rem 1.35rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 0.85rem 0', fontSize: '1.05rem' }}>
                   My Leave History
                 </h3>
@@ -1465,9 +1469,9 @@ const EmployeeDashboard = () => {
                                 borderRadius: '9999px',
                                 fontSize: '0.75rem',
                                 fontWeight: '600',
-                                background: req.status === 'APPROVED' ? 'rgba(34,197,94,0.15)' : req.status === 'REJECTED' ? 'rgba(239,68,68,0.15)' : 'rgba(234,179,8,0.15)',
-                                color: req.status === 'APPROVED' ? '#4ade80' : req.status === 'REJECTED' ? '#f87171' : '#facc15',
-                                border: req.status === 'APPROVED' ? '1px solid rgba(34,197,94,0.3)' : req.status === 'REJECTED' ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(234,179,8,0.3)'
+                                background: req.status === 'APPROVED' ? 'rgba(52,211,153,0.15)' : req.status === 'REJECTED' ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
+                                color: req.status === 'APPROVED' ? 'var(--accent-green)' : req.status === 'REJECTED' ? 'var(--accent-red)' : 'var(--accent-yellow)',
+                                border: req.status === 'APPROVED' ? '1px solid rgba(52,211,153,0.3)' : req.status === 'REJECTED' ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(251,191,36,0.3)'
                               }}>
                                 {req.status}
                               </span>
@@ -1519,7 +1523,7 @@ const EmployeeDashboard = () => {
               <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1rem 0' }}>Logs History</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
                     <th style={{ padding: '0.5rem' }}>Week Start</th>
                     <th style={{ padding: '0.5rem' }}>Hours</th>
                     <th style={{ padding: '0.5rem' }}>Status</th>
@@ -1527,11 +1531,11 @@ const EmployeeDashboard = () => {
                 </thead>
                 <tbody>
                   {timesheets.map(ts => (
-                    <tr key={ts.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem' }}>{ts.weekStartDate}</td>
                       <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem' }}>{ts.hoursWorked} hrs</td>
                       <td style={{ padding: '0.75rem 0.5rem' }}>
-                        <span style={{ padding: '0.25rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', background: ts.status === 'APPROVED' ? 'rgba(34,197,94,0.15)' : ts.status === 'REJECTED' ? 'rgba(239,68,68,0.15)' : 'rgba(234,179,8,0.15)', color: ts.status === 'APPROVED' ? '#86efac' : ts.status === 'REJECTED' ? '#fca5a5' : '#fef08a' }}>
+                        <span style={{ padding: '0.25rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', background: ts.status === 'APPROVED' ? 'rgba(52,211,153,0.15)' : ts.status === 'REJECTED' ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)', color: ts.status === 'APPROVED' ? 'var(--accent-green)' : ts.status === 'REJECTED' ? 'var(--accent-red)' : 'var(--accent-yellow)' }}>
                           {ts.status}
                         </span>
                       </td>
@@ -1550,7 +1554,7 @@ const EmployeeDashboard = () => {
             <h3 className="card-title" style={{ borderBottom: 'none', margin: '0 0 1.5rem 0' }}>Performance Appraisal History</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>
+                <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
                   <th style={{ padding: '0.5rem' }}>Review Period</th>
                   <th style={{ padding: '0.5rem' }}>Rating</th>
                   <th style={{ padding: '0.5rem' }}>Feedback</th>
@@ -1559,9 +1563,9 @@ const EmployeeDashboard = () => {
               </thead>
               <tbody>
                 {performances.map(p => (
-                  <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td style={{ padding: '0.75rem 0.5rem' }}>{p.reviewPeriod}</td>
-                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold', color: '#38bdf8' }}>{p.rating} / 5</td>
+                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold', color: 'var(--primary-blue)' }}>{p.rating} / 5</td>
                     <td style={{ padding: '0.75rem 0.5rem' }}>{p.feedback}</td>
                     <td style={{ padding: '0.75rem 0.5rem' }}>{p.reviewDate}</td>
                   </tr>
@@ -2033,6 +2037,7 @@ const EmployeeDashboard = () => {
           </div>
         </div>
       )}
+      <AiChatWidget />
     </div>
   );
 };

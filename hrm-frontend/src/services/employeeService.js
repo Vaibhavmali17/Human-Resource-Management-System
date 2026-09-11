@@ -156,3 +156,9 @@ export const deleteLicense = async (id) => {
   return response.data;
 };
 
+export const sendChatMessage = async (message, history) => {
+  const response = await axiosInstance.post('/api/employee/chat', { message, history });
+  return response.data;
+};
+
+
