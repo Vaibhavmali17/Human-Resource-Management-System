@@ -39,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final EmployeeRepository employeeRepository;
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
@@ -47,14 +47,14 @@ public class AuthServiceImpl implements AuthService {
                            PasswordEncoder passwordEncoder,
                            JwtTokenProvider tokenProvider,
                            EmployeeRepository employeeRepository,
-                           JavaMailSender mailSender) {
+                           EmailService emailService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.employeeRepository = employeeRepository;
-        this.mailSender = mailSender;
+        this.emailService = emailService;
     }
 
     @Override
@@ -220,19 +220,17 @@ public class AuthServiceImpl implements AuthService {
         employeeRepository.save(employee);
 
         try {
-            SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setTo(request.getEmail());
-            mailMessage.setSubject("Your HR/Admin Portal Access");
-            mailMessage.setText("Hello " + firstName + " " + lastName + ",\n\n" +
+            String subject = "Your HR/Admin Portal Access";
+            String body = "Hello " + firstName + " " + lastName + ",\n\n" +
                     "Your HR/Admin account has been onboarded successfully.\n\n" +
                     "Username: " + username + "\n" +
                     "Temporary Password: " + tempCode + "\n\n" +
-                    "IMPORTANT: You must change your password on your first login.");
-            mailSender.send(mailMessage);
-            return Map.of("message", "Invite email sent to " + request.getEmail());
+                    "IMPORTANT: You must change your password on your first login.";
+            emailService.sendEmailAsync(request.getEmail(), subject, body);
+            return Map.of("message", "HR Account created for " + request.getEmail() + ". Invite email is being dispatched.");
         } catch (Exception e) {
             System.err.println("[SMTP FAILURE] Failed to send HR onboarding email to " + request.getEmail() + ". Generated Username: " + username + ", Temporary Code: " + tempCode + ". Error: " + e.getMessage());
-            return Map.of("message", "HR Account created for " + request.getEmail() + ", but invite email failed to send (SMTP Error). Admin can check server logs for temporary code.");
+            return Map.of("message", "HR Account created for " + request.getEmail() + ", but invite email failed to send (SMTP Error). Generated credentials: Username: " + username + " / Temporary Password: " + tempCode);
         }
     }
 
