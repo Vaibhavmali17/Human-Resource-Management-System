@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import './Login.css';
 
 const Login = () => {
   const [portalRole, setPortalRole] = useState('EMPLOYEE'); // 'EMPLOYEE' or 'ADMIN'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [capsLockOn, setCapsLockOn] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleCapsLockCheck = (e) => {
+    if (e.getModifierState) {
+      setCapsLockOn(e.getModifierState('CapsLock'));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       const user = await login(username, password);
       
@@ -23,6 +35,7 @@ const Login = () => {
       if (portalRole === 'ADMIN') {
         if (!isAdmin) {
           setError('Login failed: Access denied. Account does not have HR / Admin privileges.');
+          setLoading(false);
           return;
         }
         navigate('/admin');
@@ -30,6 +43,7 @@ const Login = () => {
         // EMPLOYEE Portal tab
         if (isAdmin && !isEmployee) {
           setError('Login failed: Account is HR / Admin. Please switch to HR / Admin Portal tab above.');
+          setLoading(false);
           return;
         }
         navigate('/employee');
@@ -47,208 +61,236 @@ const Login = () => {
         errorMsg = err.message;
       }
       setError(errorMsg);
+      setLoading(false);
     }
   };
 
-  const containerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    width: '100%',
-    boxSizing: 'border-box',
-    background: 'radial-gradient(circle at top, #1e293b, #0f172a)',
-    color: '#f8fafc',
-    fontFamily: "'Outfit', 'Inter', sans-serif"
-  };
-
-  const cardStyle = {
-    width: '100%',
-    maxWidth: '440px',
-    padding: '2.5rem',
-    background: 'rgba(30, 41, 59, 0.75)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '16px',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)'
-  };
-
-  const titleStyle = {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    marginBottom: '0.25rem',
-    textAlign: 'center',
-    color: portalRole === 'ADMIN' ? '#f43f5e' : '#38bdf8',
-    transition: 'all 0.3s ease'
-  };
-
-  const subtitleStyle = {
-    fontSize: '0.875rem',
-    color: '#94a3b8',
-    marginBottom: '1.5rem',
-    textAlign: 'center'
-  };
-
-  const tabContainerStyle = {
-    display: 'flex',
-    background: 'rgba(15, 23, 42, 0.6)',
-    borderRadius: '10px',
-    padding: '4px',
-    marginBottom: '1.75rem',
-    border: '1px solid rgba(255, 255, 255, 0.05)'
-  };
-
-  const getTabStyle = (role) => ({
-    flex: 1,
-    padding: '0.6rem 0.5rem',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    background: portalRole === role 
-      ? (role === 'ADMIN' ? 'linear-gradient(135deg, #e11d48, #be123c)' : 'linear-gradient(135deg, #0284c7, #0369a1)')
-      : 'transparent',
-    color: portalRole === role ? '#ffffff' : '#94a3b8',
-    boxShadow: portalRole === role ? '0 4px 12px rgba(0, 0, 0, 0.3)' : 'none'
-  });
-
-  const inputGroupStyle = {
-    marginBottom: '1.25rem'
-  };
-
-  const labelStyle = {
-    display: 'block',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#cbd5e1',
-    marginBottom: '0.5rem'
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '0.75rem 1rem',
-    background: '#0f172a',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    color: '#f8fafc',
-    fontSize: '1rem',
-    outline: 'none',
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-  };
-
-  const buttonStyle = {
-    width: '100%',
-    padding: '0.75rem',
-    background: portalRole === 'ADMIN' 
-      ? 'linear-gradient(135deg, #e11d48, #be123c)' 
-      : 'linear-gradient(135deg, #38bdf8, #0369a1)',
-    border: 'none',
-    borderRadius: '8px',
-    color: '#fff',
-    fontSize: '1rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '1.5rem',
-    boxShadow: portalRole === 'ADMIN'
-      ? '0 4px 12px rgba(225, 29, 72, 0.3)'
-      : '0 4px 12px rgba(56, 189, 248, 0.3)',
-    transition: 'all 0.2s ease'
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={cardStyle}>
-        <h2 style={titleStyle}>HRM Portal</h2>
-        <p style={subtitleStyle}>Sign in to manage your resource workspace</p>
-        
-        {/* Portal Switcher Tabs */}
-        <div style={tabContainerStyle}>
-          <button 
-            type="button" 
-            style={getTabStyle('EMPLOYEE')} 
-            onClick={() => { setPortalRole('EMPLOYEE'); setError(''); }}
-          >
-            Employee Portal
-          </button>
-          <button 
-            type="button" 
-            style={getTabStyle('ADMIN')} 
-            onClick={() => { setPortalRole('ADMIN'); setError(''); }}
-          >
-            HR / Admin Portal
-          </button>
+    <div className="login-wrapper">
+      {/* Branded Left Panel */}
+      <div className="login-brand-panel">
+        <div className="brand-blob brand-blob-1"></div>
+        <div className="brand-blob brand-blob-2"></div>
+        <div className="brand-content">
+          <div className="brand-logo-container">
+            <svg className="brand-logo-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h1 className="brand-title">HRM Portal</h1>
+          <p className="brand-tagline">HR made simple</p>
+          <div className="brand-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+            Enterprise Resource Management
+          </div>
+
+          {/* Feature Chips */}
+          <div className="brand-feature-list">
+            <div className="brand-feature-chip">
+              <div className="feature-chip-icon-wrapper">
+                <svg className="feature-chip-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="feature-chip-text">
+                <span className="feature-chip-title">AI Assistance</span>
+                <span className="feature-chip-desc">Context-aware Gemini intelligence</span>
+              </div>
+            </div>
+
+            <div className="brand-feature-chip">
+              <div className="feature-chip-icon-wrapper">
+                <svg className="feature-chip-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="feature-chip-text">
+                <span className="feature-chip-title">Automated Workflows</span>
+                <span className="feature-chip-desc">Instant onboarding & leave approvals</span>
+              </div>
+            </div>
+
+            <div className="brand-feature-chip">
+              <div className="feature-chip-icon-wrapper">
+                <svg className="feature-chip-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div className="feature-chip-text">
+                <span className="feature-chip-title">Enterprise Security</span>
+                <span className="feature-chip-desc">Role-based JWT & encrypted sessions</span>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Error Alert Box */}
-        {error && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid #ef4444',
-            borderRadius: '8px',
-            padding: '0.85rem 1rem',
-            color: '#fca5a5',
-            fontSize: '0.875rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)'
-          }}>
-            <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>⚠️</span>
-            <div>{error}</div>
+      {/* Login Form Right Panel */}
+      <div className="login-form-panel">
+        <div className="login-card-wrapper">
+          <div className="login-card">
+            <div className="login-card-header">
+              <h2 className="login-card-title">Welcome Back</h2>
+              <p className="login-card-subtitle">Sign in to manage your resource workspace</p>
+            </div>
+
+            {/* Segmented Pill Portal Switcher */}
+            <div className={`portal-segmented-control ${portalRole === 'ADMIN' ? 'is-admin' : 'is-employee'}`}>
+              <div className="segmented-indicator"></div>
+              <button
+                type="button"
+                className={`segmented-tab ${portalRole === 'EMPLOYEE' ? 'active' : ''}`}
+                onClick={() => { setPortalRole('EMPLOYEE'); setError(''); }}
+              >
+                <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Employee Portal</span>
+              </button>
+              <button
+                type="button"
+                className={`segmented-tab ${portalRole === 'ADMIN' ? 'active' : ''}`}
+                onClick={() => { setPortalRole('ADMIN'); setError(''); }}
+              >
+                <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>HR / Admin Portal</span>
+              </button>
+            </div>
+
+            {/* Error Alert Box */}
+            {error && (
+              <div className="login-error-alert">
+                <span className="login-error-icon">⚠️</span>
+                <div>{error}</div>
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleSubmit}>
+              <div className="login-input-group">
+                <div className="floating-input-wrapper">
+                  <input
+                    id="username-input"
+                    type="text"
+                    required
+                    className="floating-input has-left-icon"
+                    placeholder=" "
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    disabled={loading}
+                  />
+                  <svg className="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <label htmlFor="username-input" className="floating-label has-left-icon">
+                    {portalRole === 'ADMIN' ? 'HR / Admin Username' : 'Employee Username'}
+                  </label>
+                </div>
+              </div>
+
+              <div className="login-input-group">
+                <div className="floating-input-wrapper">
+                  <input
+                    id="password-input"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    className="floating-input has-left-icon has-right-icon"
+                    placeholder=" "
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleCapsLockCheck}
+                    onKeyUp={handleCapsLockCheck}
+                    disabled={loading}
+                  />
+                  <svg className="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <label htmlFor="password-input" className="floating-label has-left-icon">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <svg className="password-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-10-7-10-7a19.017 19.017 0 014.2-4.9m3.3-2.1A9.97 9.97 0 0112 5c7 0 10 7 10 7a18.97 18.97 0 01-2.9 3.8m-4.2-2.1a3 3 0 11-4.24-4.24M3 3l18 18" />
+                      </svg>
+                    ) : (
+                      <svg className="password-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {capsLockOn && (
+                  <div className="caps-lock-warning">
+                    <svg className="caps-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>Caps Lock is ON</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Form Extra Options (Remember Me) */}
+              <div className="login-form-options">
+                <label className="remember-me-label">
+                  <input
+                    type="checkbox"
+                    className="remember-me-checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <span>Remember me</span>
+                </label>
+              </div>
+
+              <button type="submit" className="login-submit-btn" disabled={loading}>
+                {loading ? (
+                  <>
+                    <svg className="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="12" cy="12" r="10" strokeWidth="4" strokeDasharray="32" strokeDashoffset="10" />
+                    </svg>
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Sign In as {portalRole === 'ADMIN' ? 'HR / Admin' : 'Employee'}</span>
+                  </>
+                )}
+              </button>
+            </form>
+
+            {portalRole === 'ADMIN' ? (
+              <p className="login-footer-text">
+                Don't have HR access? Contact your system administrator.
+              </p>
+            ) : (
+              <p className="login-footer-text">
+                Don't have an account?{' '}
+                <Link to="/register" className="login-link">
+                  Register here
+                </Link>
+              </p>
+            )}
           </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>{portalRole === 'ADMIN' ? 'HR / Admin Username' : 'Employee Username'}</label>
-            <input 
-              type="text" 
-              required 
-              style={inputStyle} 
-              placeholder={portalRole === 'ADMIN' ? 'e.g. admin' : 'e.g. john_doe'}
-              onFocus={(e) => e.target.style.borderColor = portalRole === 'ADMIN' ? '#f43f5e' : '#38bdf8'}
-              onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Password</label>
-            <input 
-              type="password" 
-              required 
-              style={inputStyle}
-              placeholder="••••••••"
-              onFocus={(e) => e.target.style.borderColor = portalRole === 'ADMIN' ? '#f43f5e' : '#38bdf8'}
-              onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <button type="submit" style={buttonStyle}>
-            Sign In as {portalRole === 'ADMIN' ? 'HR / Admin' : 'Employee'}
-          </button>
-        </form>
-
-        {portalRole === 'ADMIN' ? (
-          <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#94a3b8' }}>
-            Don't have HR access? Contact your system administrator.
-          </p>
-        ) : (
-          <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#94a3b8' }}>
-            Don't have an account? <Link to="/register" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: '500' }}>Register here</Link>
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default Login;
-
