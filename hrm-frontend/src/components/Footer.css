@@ -2,10 +2,10 @@
 
 .enterprise-footer {
   width: 100%;
-  background-color: #0b1120;
+  background-color: #0f172a;
   color: #94a3b8;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #1e293b;
   margin-top: auto;
   box-sizing: border-box;
 }
@@ -16,16 +16,16 @@
   padding: 3rem 1.5rem 1.5rem 1.5rem;
 }
 
-/* 3-Column Grid Layout */
+/* 3-Column Grid Layout on Desktop, Auto-stacking to 1 Column on Mobile */
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1.2fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 2.5rem;
   padding-bottom: 2.5rem;
   text-align: left;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -42,13 +42,11 @@
 
 .footer-brand-icon {
   font-size: 1.4rem;
-  background: linear-gradient(135deg, #4f9dff 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #38bdf8;
 }
 
 .footer-brand-name {
-  color: #f1f5f9;
+  color: #f8fafc;
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
@@ -66,46 +64,46 @@
   display: block;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .desktop-break {
     display: inline;
   }
 }
 
-/* Status Indicator */
+/* Operational Status Indicator with Glowing Pulse Animation */
 .footer-status-indicator {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  background: rgba(15, 23, 42, 0.8);
+  background: #1e293b;
   border: 1px solid rgba(52, 211, 153, 0.25);
   padding: 0.4rem 0.85rem;
   border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
-  background-color: #34d399;
+  background-color: #10b981;
   border-radius: 50%;
   position: relative;
-  box-shadow: 0 0 8px #34d399;
+  box-shadow: 0 0 10px #10b981;
   animation: pulse-glow 2s infinite ease-in-out;
 }
 
 @keyframes pulse-glow {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
   }
   70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 8px rgba(52, 211, 153, 0);
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
   }
 }
 
@@ -132,7 +130,7 @@
   display: block;
   width: 24px;
   height: 2px;
-  background: linear-gradient(90deg, #4f9dff, #7c3aed);
+  background: #38bdf8;
   margin-top: 0.4rem;
   border-radius: 2px;
 }
@@ -152,7 +150,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 400;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
   display: inline-block;
 }
 
@@ -161,7 +159,7 @@
   transform: translateX(4px);
 }
 
-/* Column 3: Tech Chips / Badges */
+/* Column 3: Tech Badges / Chips */
 .footer-tech-badges {
   display: flex;
   flex-wrap: wrap;
@@ -169,27 +167,26 @@
 }
 
 .tech-chip {
-  background: #131b34;
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
   font-size: 0.78rem;
   font-weight: 500;
   padding: 0.35rem 0.75rem;
   border-radius: 6px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .tech-chip:hover {
-  background: #1e293b;
   color: #38bdf8;
-  border-color: rgba(56, 189, 248, 0.3);
+  border-color: #38bdf8;
   transform: translateY(-2px);
 }
 
 /* Bottom Copyright Bar */
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid #1e293b;
   padding-top: 1.25rem;
   text-align: center;
 }
